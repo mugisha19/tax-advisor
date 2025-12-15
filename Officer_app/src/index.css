@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@source "./**/*.{js,ts,jsx,tsx}";
+@source "../index.html";
+
+html {
+  scroll-behavior: smooth;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #041526;
+  text-align: center;
+  padding: 1rem 0;
+  font-size: 0.9rem;
+  color: #fff;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.logo {
+  max-width: 40%;
+  height: auto;
+  border-radius: 50%;
+}
+

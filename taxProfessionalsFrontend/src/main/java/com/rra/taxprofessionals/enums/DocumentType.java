@@ -1,0 +1,13 @@
+package com.rra.taxprofessionals.enums;
+
+public enum DocumentType {
+    SIGNEDLETTER,
+    CRIMINALRECORD,
+    EDUCERTIFICATE,
+    EBMCERTIFICATE,
+    RECOMMENDATIONLETTER,
+    NONREFUNDFEES,
+    CV,
+    TAXCLEARANCECERTIFICATE,
+    BUSINESSREGISTRATIONCERT
+}

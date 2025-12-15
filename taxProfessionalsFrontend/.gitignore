@@ -1,0 +1,36 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Documentation files (backend implementation guides)
+BACKEND_EMAIL_API_REQUIREMENTS.md
+BACKEND_FIX_REQUIRED.md
+ENDPOINT_FIX_SUMMARY.md
+FORGOT_PASSWORD_IMPLEMENTATION_SUMMARY.md
+SEPARATE_RESET_PAGES_SUMMARY.md
+TIN_FORGOT_PASSWORD_UPDATE.md
+QUICK_FIX_DIAGRAM.md
+BACKEND_COMPANY_REQUIREMENTS.md
+BACKEND_UPDATE_MEMBER_BUG.md
+BACKEND_ALLOW_ADMIN_DELETE.md
