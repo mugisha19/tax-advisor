@@ -3,7 +3,7 @@
 import axios from "axios";
 
 const REST_API_BASE_URL =
-  "http://localhost:8080/api/taxprofessionals/certificate";
+  `${import.meta.env.VITE_API_BASE_URL}/api/taxprofessionals/certificate`;
 
 export const downloadCertificate = (tpin: string): Promise<{ data: Blob }> => {
   const tpinString = String(tpin);

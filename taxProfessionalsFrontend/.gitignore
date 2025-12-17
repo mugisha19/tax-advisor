@@ -23,6 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 
+# Environment variables
+.env
+!.env.example
+
 # Documentation files (backend implementation guides)
 BACKEND_EMAIL_API_REQUIREMENTS.md
 BACKEND_FIX_REQUIRED.md

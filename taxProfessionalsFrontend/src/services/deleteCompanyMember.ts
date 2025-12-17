@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const REST_API_BASE_URL = "http://localhost:8080/api/companies/members";
+const REST_API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/companies/members`;
 
 export const deleteCompanyMember = async (memberTpin: string) => {
   console.log("DeleteCompanyMember Service: Deleting member with TPIN:", memberTpin);

@@ -2,7 +2,7 @@ import axios from "axios";
 import type { ApiResponse } from "../types/application";
 import type { CompanyMember, AddMemberData } from "../types/company";
 
-const REST_API_BASE_URL = "http://localhost:8080/api/companies";
+const REST_API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/companies`;
 
 export const addCompanyMember = (
   companyId: number | string,

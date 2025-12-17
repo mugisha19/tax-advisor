@@ -6,12 +6,12 @@ Write-Host "DATABASE MIGRATION - Rejection Letter Columns" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# PostgreSQL connection details (from application.properties)
-$PGHOST = "localhost"
-$PGPORT = "5432"
-$PGDATABASE = "taxpayer_db_backup"
-$PGUSER = "postgres"
-$PGPASSWORD = "mugisha1234!@"
+# PostgreSQL connection details (from environment or defaults)
+$PGHOST = if ($env:DB_HOST) { $env:DB_HOST } else { "localhost" }
+$PGPORT = if ($env:DB_PORT) { $env:DB_PORT } else { "5432" }
+$PGDATABASE = if ($env:DB_NAME) { $env:DB_NAME } else { "taxpayer_db_backup" }
+$PGUSER = if ($env:DB_USERNAME) { $env:DB_USERNAME } else { "postgres" }
+$PGPASSWORD = if ($env:DB_PASSWORD) { $env:DB_PASSWORD } else { "mugisha1234!@" }
 
 Write-Host "Connecting to PostgreSQL..." -ForegroundColor Yellow
 Write-Host "  Host: $PGHOST" -ForegroundColor Gray

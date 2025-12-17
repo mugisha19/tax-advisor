@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const REST_API_BASE_URL = "http://localhost:8080/api/auth/forgot-password";
+const REST_API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/auth/forgot-password`;
 
 interface ForgotPasswordData {
   tinNumber: string;

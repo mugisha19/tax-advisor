@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const REST_API_BASE_URL = 'http://localhost:8080/api/documents/update'
+const REST_API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/documents/update`
 
 export const updateDocument = (documentId: string | number, file: File, documentType: string) => {
     const documentIdString = String(documentId);

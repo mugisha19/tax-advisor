@@ -5,7 +5,7 @@ import type { ApiResponse, Application } from "../types/application";
 import type { CompanyAccount } from "../types/company";
 import { AccountType } from "../types/company";
 
-const REST_API_BASE_URL = "http://localhost:8080/api/taxprofessionals/me";
+const REST_API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/taxprofessionals/me`;
 
 export interface CurrentUserResponse {
   accountType?: AccountType;

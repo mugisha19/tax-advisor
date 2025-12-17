@@ -3,7 +3,7 @@
 import axios from "axios";
 import type { ApiResponse, Document } from "../types/document";
 
-const REST_API_BASE_URL = "http://localhost:8080/api/documents/taxprofessional";
+const REST_API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/documents/taxprofessional`;
 
 export const getAllDocuments = (
   tpin: string | number

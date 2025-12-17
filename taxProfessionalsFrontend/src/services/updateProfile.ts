@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const REST_API_BASE_URL = "http://localhost:8080/api/taxprofessionals/update-profile";
+const REST_API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/taxprofessionals/update-profile`;
 
 interface UpdateProfileData {
   fullName?: string;

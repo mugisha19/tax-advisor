@@ -2,9 +2,13 @@
 echo Running database constraint fix...
 echo.
 
-set PGPASSWORD=mugisha1234!@
+if not defined DB_PASSWORD set DB_PASSWORD=mugisha1234!@
+if not defined DB_USERNAME set DB_USERNAME=postgres
+if not defined DB_NAME set DB_NAME=taxpayer_db_backup
 
-"C:\Program Files\PostgreSQL\16\bin\psql.exe" -U postgres -d taxpayer_db_backup -c "ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_bachelor_degree_check;"
+set PGPASSWORD=%DB_PASSWORD%
+
+"C:\Program Files\PostgreSQL\16\bin\psql.exe" -U %DB_USERNAME% -d %DB_NAME% -c "ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_bachelor_degree_check;"
 "C:\Program Files\PostgreSQL\16\bin\psql.exe" -U postgres -d taxpayer_db_backup -c "ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_professional_qualification_check;"
 "C:\Program Files\PostgreSQL\16\bin\psql.exe" -U postgres -d taxpayer_db_backup -c "ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_certificate_type_check;"
 "C:\Program Files\PostgreSQL\16\bin\psql.exe" -U postgres -d taxpayer_db_backup -c "ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_masters_degree_check;"

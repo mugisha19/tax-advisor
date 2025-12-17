@@ -33,7 +33,7 @@ const MyReviews = () => {
       }
 
       const response = await fetch(
-        "http://localhost:8080/api/officer/my-reviews",
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/officer/my-reviews`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -37,6 +37,7 @@ build/
 
 # Environment variables
 .env
+!.env.example
 
 # Documentation files
 *.md
