@@ -22,9 +22,10 @@ public class TaxprofessionalsApplication {
         log.info("========================================");
         log.info("MAIL_USERNAME: {}", System.getenv("MAIL_USERNAME"));
         log.info("EMAIL_MOCK_ENABLED: {}", System.getenv("EMAIL_MOCK_ENABLED"));
+        String mailPassword = System.getenv("MAIL_PASSWORD");
         log.info("MAIL_PASSWORD: {}***",
-                System.getenv("MAIL_PASSWORD") != null
-                ? System.getenv("MAIL_PASSWORD").substring(0, 4) : "NOT SET");
+                mailPassword != null && mailPassword.length() >= 4
+                ? mailPassword.substring(0, 4) : "NOT SET");
         log.info("========================================");
     }
 
