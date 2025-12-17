@@ -36,8 +36,8 @@ build/
 .vscode/
 
 # Environment variables
-.env
-!.env.example
+env.properties
+!env.properties.example
 
 # Documentation files
 *.md
