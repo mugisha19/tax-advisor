@@ -4,10 +4,10 @@ After=network.target postgresql.service
 
 [Service]
 Type=simple
-User=taxadvisor
+User=root
 WorkingDirectory=/opt/tax-advisor/backend
-ExecStart=/usr/bin/java -jar taxprofessionals-0.0.1-SNAPSHOT.jar
-EnvironmentFile=/opt/tax-advisor/backend/.env
+ExecStart=/usr/bin/java -jar /opt/tax-advisor/backend/taxprofessionals-0.0.1-SNAPSHOT.jar
+EnvironmentFile=-/opt/tax-advisor/backend/.env
 Restart=always
 RestartSec=10
 

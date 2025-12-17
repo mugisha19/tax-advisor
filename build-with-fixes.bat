@@ -76,10 +76,10 @@ echo After=network.target postgresql.service>> deploy\tax-advisor\scripts\tax-ad
 echo.>> deploy\tax-advisor\scripts\tax-advisor-backend.service
 echo [Service]>> deploy\tax-advisor\scripts\tax-advisor-backend.service
 echo Type=simple>> deploy\tax-advisor\scripts\tax-advisor-backend.service
-echo User=taxadvisor>> deploy\tax-advisor\scripts\tax-advisor-backend.service
+echo User=root>> deploy\tax-advisor\scripts\tax-advisor-backend.service
 echo WorkingDirectory=/opt/tax-advisor/backend>> deploy\tax-advisor\scripts\tax-advisor-backend.service
-echo ExecStart=/usr/bin/java -jar taxprofessionals-0.0.1-SNAPSHOT.jar>> deploy\tax-advisor\scripts\tax-advisor-backend.service
-echo EnvironmentFile=/opt/tax-advisor/backend/.env>> deploy\tax-advisor\scripts\tax-advisor-backend.service
+echo ExecStart=/usr/bin/java -jar /opt/tax-advisor/backend/taxprofessionals-0.0.1-SNAPSHOT.jar>> deploy\tax-advisor\scripts\tax-advisor-backend.service
+echo EnvironmentFile=-/opt/tax-advisor/backend/.env>> deploy\tax-advisor\scripts\tax-advisor-backend.service
 echo Restart=always>> deploy\tax-advisor\scripts\tax-advisor-backend.service
 echo RestartSec=10>> deploy\tax-advisor\scripts\tax-advisor-backend.service
 echo.>> deploy\tax-advisor\scripts\tax-advisor-backend.service
@@ -92,10 +92,10 @@ echo After=network.target>> deploy\tax-advisor\scripts\tax-advisor-taxprofession
 echo.>> deploy\tax-advisor\scripts\tax-advisor-taxprofessional-frontend.service
 echo [Service]>> deploy\tax-advisor\scripts\tax-advisor-taxprofessional-frontend.service
 echo Type=simple>> deploy\tax-advisor\scripts\tax-advisor-taxprofessional-frontend.service
-echo User=taxadvisor>> deploy\tax-advisor\scripts\tax-advisor-taxprofessional-frontend.service
+echo User=root>> deploy\tax-advisor\scripts\tax-advisor-taxprofessional-frontend.service
 echo WorkingDirectory=/opt/tax-advisor/taxprofessional-frontend>> deploy\tax-advisor\scripts\tax-advisor-taxprofessional-frontend.service
 echo ExecStart=/usr/bin/python3 -m http.server 5173 --bind 0.0.0.0>> deploy\tax-advisor\scripts\tax-advisor-taxprofessional-frontend.service
-echo EnvironmentFile=/opt/tax-advisor/taxprofessional-frontend/.env>> deploy\tax-advisor\scripts\tax-advisor-taxprofessional-frontend.service
+echo EnvironmentFile=-/opt/tax-advisor/taxprofessional-frontend/.env>> deploy\tax-advisor\scripts\tax-advisor-taxprofessional-frontend.service
 echo Restart=always>> deploy\tax-advisor\scripts\tax-advisor-taxprofessional-frontend.service
 echo RestartSec=10>> deploy\tax-advisor\scripts\tax-advisor-taxprofessional-frontend.service
 echo.>> deploy\tax-advisor\scripts\tax-advisor-taxprofessional-frontend.service
@@ -108,10 +108,10 @@ echo After=network.target>> deploy\tax-advisor\scripts\tax-advisor-officer-front
 echo.>> deploy\tax-advisor\scripts\tax-advisor-officer-frontend.service
 echo [Service]>> deploy\tax-advisor\scripts\tax-advisor-officer-frontend.service
 echo Type=simple>> deploy\tax-advisor\scripts\tax-advisor-officer-frontend.service
-echo User=taxadvisor>> deploy\tax-advisor\scripts\tax-advisor-officer-frontend.service
+echo User=root>> deploy\tax-advisor\scripts\tax-advisor-officer-frontend.service
 echo WorkingDirectory=/opt/tax-advisor/officer-frontend>> deploy\tax-advisor\scripts\tax-advisor-officer-frontend.service
 echo ExecStart=/usr/bin/python3 -m http.server 5000 --bind 0.0.0.0>> deploy\tax-advisor\scripts\tax-advisor-officer-frontend.service
-echo EnvironmentFile=/opt/tax-advisor/officer-frontend/.env>> deploy\tax-advisor\scripts\tax-advisor-officer-frontend.service
+echo EnvironmentFile=-/opt/tax-advisor/officer-frontend/.env>> deploy\tax-advisor\scripts\tax-advisor-officer-frontend.service
 echo Restart=always>> deploy\tax-advisor\scripts\tax-advisor-officer-frontend.service
 echo RestartSec=10>> deploy\tax-advisor\scripts\tax-advisor-officer-frontend.service
 echo.>> deploy\tax-advisor\scripts\tax-advisor-officer-frontend.service
@@ -122,11 +122,11 @@ REM Create deployment script
 echo #!/bin/bash> deploy\tax-advisor\scripts\deploy.sh
 echo DEPLOY_DIR="/opt/tax-advisor">> deploy\tax-advisor\scripts\deploy.sh
 echo echo "=== Deploying Tax Advisor System ===">> deploy\tax-advisor\scripts\deploy.sh
-
+echo cd "$(dirname "$0")/..">> deploy\tax-advisor\scripts\deploy.sh
 echo mkdir -p $DEPLOY_DIR/{backend,taxprofessional-frontend,officer-frontend,logs,uploads}>> deploy\tax-advisor\scripts\deploy.sh
-echo cp -r backend/* $DEPLOY_DIR/backend/>> deploy\tax-advisor\scripts\deploy.sh
-echo cp -r taxprofessional-frontend/* $DEPLOY_DIR/taxprofessional-frontend/>> deploy\tax-advisor\scripts\deploy.sh
-echo cp -r officer-frontend/* $DEPLOY_DIR/officer-frontend/>> deploy\tax-advisor\scripts\deploy.sh
+echo cp -r backend/. $DEPLOY_DIR/backend/>> deploy\tax-advisor\scripts\deploy.sh
+echo cp -r taxprofessional-frontend/. $DEPLOY_DIR/taxprofessional-frontend/>> deploy\tax-advisor\scripts\deploy.sh
+echo cp -r officer-frontend/. $DEPLOY_DIR/officer-frontend/>> deploy\tax-advisor\scripts\deploy.sh
 echo chown -R $(whoami):$(whoami) $DEPLOY_DIR>> deploy\tax-advisor\scripts\deploy.sh
 echo systemctl stop tax-advisor-* 2^>/dev/null ^|^| true>> deploy\tax-advisor\scripts\deploy.sh
 echo cp scripts/*.service /etc/systemd/system/>> deploy\tax-advisor\scripts\deploy.sh

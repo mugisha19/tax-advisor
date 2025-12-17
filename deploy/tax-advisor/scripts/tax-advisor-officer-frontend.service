@@ -4,10 +4,10 @@ After=network.target
 
 [Service]
 Type=simple
-User=taxadvisor
+User=root
 WorkingDirectory=/opt/tax-advisor/officer-frontend
 ExecStart=/usr/bin/python3 -m http.server 5000 --bind 0.0.0.0
-EnvironmentFile=/opt/tax-advisor/officer-frontend/.env
+EnvironmentFile=-/opt/tax-advisor/officer-frontend/.env
 Restart=always
 RestartSec=10
 
