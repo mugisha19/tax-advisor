@@ -2,6 +2,7 @@ HELP.md
 API.md
 uploads/
 target/
+logs/
 REJECTION_LIMIT_IMPLEMENTATION.md
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

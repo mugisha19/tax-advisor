@@ -5,7 +5,7 @@ Write-Host "`n=== Certificate Generation & Email Sending ===" -ForegroundColor C
 Write-Host ""
 
 # Configuration
-$baseUrl = if ($env:API_BASE_URL) { $env:API_BASE_URL } else { "http://localhost:8080" }
+$baseUrl = if ($env:API_BASE_URL) { $env:API_BASE_URL } else { "http://192.168.14.207:8080" }
 $tpin = if ($env:TEST_TPIN) { $env:TEST_TPIN } else { "100602866-1" }
 $adminUsername = if ($env:ADMIN_USERNAME) { $env:ADMIN_USERNAME } else { "mugisha" }
 $adminPassword = if ($env:ADMIN_PASSWORD) { $env:ADMIN_PASSWORD } else { "Mugisha1234!@" }

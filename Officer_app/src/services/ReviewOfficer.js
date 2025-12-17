@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const REST_API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/admin/officers`;
+const REST_API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://192.168.14.207:8080'}/api/admin/officers`;
 
 export const ListApplicants = () => {
   const token = localStorage.getItem("token");

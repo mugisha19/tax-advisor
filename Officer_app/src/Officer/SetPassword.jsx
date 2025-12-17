@@ -68,7 +68,7 @@ const SetPassword = () => {
   const validateToken = async (tokenParam) => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/auth/validate-invitation`,
+        `${import.meta.env.VITE_API_BASE_URL || 'http://192.168.14.207:8080'}/api/auth/validate-invitation`,
         { token: tokenParam }
       );
 
@@ -136,7 +136,7 @@ const SetPassword = () => {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/auth/set-password`,
+        `${import.meta.env.VITE_API_BASE_URL || 'http://192.168.14.207:8080'}/api/auth/set-password`,
         {
           token: token,
           newPassword: newPassword,

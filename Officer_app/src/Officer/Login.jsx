@@ -50,7 +50,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/auth/login`,
+        `${import.meta.env.VITE_API_BASE_URL || 'http://192.168.14.207:8080'}/api/auth/login`,
         {
           username,
           password,
@@ -133,7 +133,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/auth/forgot-password`,
+        `${import.meta.env.VITE_API_BASE_URL || 'http://192.168.14.207:8080'}/api/auth/forgot-password`,
         {
           email: resetEmail,
         }
