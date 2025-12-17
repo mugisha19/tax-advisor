@@ -122,12 +122,12 @@ REM Create deployment script
 echo #!/bin/bash> deploy\tax-advisor\scripts\deploy.sh
 echo DEPLOY_DIR="/opt/tax-advisor">> deploy\tax-advisor\scripts\deploy.sh
 echo echo "=== Deploying Tax Advisor System ===">> deploy\tax-advisor\scripts\deploy.sh
-echo useradd -r -s /bin/false taxadvisor 2^>/dev/null ^|^| true>> deploy\tax-advisor\scripts\deploy.sh
+
 echo mkdir -p $DEPLOY_DIR/{backend,taxprofessional-frontend,officer-frontend,logs,uploads}>> deploy\tax-advisor\scripts\deploy.sh
 echo cp -r backend/* $DEPLOY_DIR/backend/>> deploy\tax-advisor\scripts\deploy.sh
 echo cp -r taxprofessional-frontend/* $DEPLOY_DIR/taxprofessional-frontend/>> deploy\tax-advisor\scripts\deploy.sh
 echo cp -r officer-frontend/* $DEPLOY_DIR/officer-frontend/>> deploy\tax-advisor\scripts\deploy.sh
-echo chown -R taxadvisor:taxadvisor $DEPLOY_DIR>> deploy\tax-advisor\scripts\deploy.sh
+echo chown -R $(whoami):$(whoami) $DEPLOY_DIR>> deploy\tax-advisor\scripts\deploy.sh
 echo systemctl stop tax-advisor-* 2^>/dev/null ^|^| true>> deploy\tax-advisor\scripts\deploy.sh
 echo cp scripts/*.service /etc/systemd/system/>> deploy\tax-advisor\scripts\deploy.sh
 echo systemctl daemon-reload>> deploy\tax-advisor\scripts\deploy.sh
