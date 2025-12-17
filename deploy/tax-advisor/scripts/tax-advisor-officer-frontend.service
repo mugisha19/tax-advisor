@@ -1,0 +1,15 @@
+[Unit]
+Description=Tax Advisor Officer Frontend Service
+After=network.target
+
+[Service]
+Type=simple
+User=taxadvisor
+WorkingDirectory=/opt/tax-advisor/officer-frontend
+ExecStart=/usr/bin/python3 -m http.server 5000 --bind 0.0.0.0
+EnvironmentFile=/opt/tax-advisor/officer-frontend/.env
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
