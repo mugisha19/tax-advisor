@@ -1,0 +1,36 @@
+# Environment variables
+.env
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Dependencies
+node_modules/
+target/
+dist/
+build/
+
+# Uploads and certificates
+uploads/
+certificates/
+*.pdf
+*.p12
+*.jks
+*.keystore
+
+# Documentation (project-specific)
+*.md
+!README.md
