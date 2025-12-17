@@ -68,7 +68,7 @@ const ApprovalCertificate = forwardRef(({ applicant }, ref) => {
             {/* Left Side - Logo and Title */}
             <Box sx={{ display: "flex", alignItems: "center" }}>
               <img
-                src="/Assets/bg_rra_logo.png"
+                src="/assets/bg_rra_logo.png"
                 style={{
                   width: 65,
                   height: "auto",
@@ -243,7 +243,7 @@ const ApprovalCertificate = forwardRef(({ applicant }, ref) => {
               {/* Signature */}
               <Box sx={{ position: "relative", zIndex: 1 }}>
                 <img
-                  src="/Assets/signature.png"
+                  src="/assets/signature.png"
                   alt="Signature"
                   style={{
                     height: "80px",
@@ -263,7 +263,7 @@ const ApprovalCertificate = forwardRef(({ applicant }, ref) => {
                 }}
               >
                 <img
-                  src="/Assets/stamp.png"
+                  src="/assets/stamp.png"
                   alt="Official Stamp"
                   style={{
                     height: "120px",

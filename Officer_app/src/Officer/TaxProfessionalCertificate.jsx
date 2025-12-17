@@ -68,7 +68,7 @@ const TaxProfessionalCertificate = forwardRef(({ applicant }, ref) => {
               }}
             >
               <img
-                src="/Assets/bg_rra_logo.png"
+                src="/assets/bg_rra_logo.png"
                 style={{ width: 80, height: "auto", marginRight: 12 }}
                 alt="RRA Logo"
               />
@@ -109,7 +109,7 @@ const TaxProfessionalCertificate = forwardRef(({ applicant }, ref) => {
               }}
             >
               <img
-                src="/Assets/hd-confidential-rectangle-red-stamp-png-701751694626698fbewei0z7f-removebg-preview.png"
+                src="/assets/hd-confidential-rectangle-red-stamp-png-701751694626698fbewei0z7f-removebg-preview.png"
                 alt="Confidential Stamp"
                 style={{
                   height: "160px",
@@ -146,7 +146,7 @@ const TaxProfessionalCertificate = forwardRef(({ applicant }, ref) => {
       >
         {/* Watermark */}
         <img
-          src="/Assets/bg_rra_logo.png"
+          src="/assets/bg_rra_logo.png"
           style={{
             position: "absolute",
             top: "43%",
@@ -274,7 +274,7 @@ const TaxProfessionalCertificate = forwardRef(({ applicant }, ref) => {
               {/* Signature */}
               <Box sx={{ position: "relative", zIndex: 1 }}>
                 <img
-                  src="/Assets/signature.png"
+                  src="/assets/signature.png"
                   alt="Signature"
                   style={{
                     height: "80px",
@@ -294,7 +294,7 @@ const TaxProfessionalCertificate = forwardRef(({ applicant }, ref) => {
                 }}
               >
                 <img
-                  src="/Assets/stamp.png"
+                  src="/assets/stamp.png"
                   alt="Official Stamp"
                   style={{
                     height: "120px",
