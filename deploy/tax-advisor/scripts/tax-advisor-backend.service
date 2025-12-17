@@ -1,0 +1,15 @@
+[Unit]
+Description=Tax Advisor Backend Service
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=taxadvisor
+WorkingDirectory=/opt/tax-advisor/backend
+ExecStart=/usr/bin/java -jar taxprofessionals-0.0.1-SNAPSHOT.jar
+EnvironmentFile=/opt/tax-advisor/config/backend.env
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
