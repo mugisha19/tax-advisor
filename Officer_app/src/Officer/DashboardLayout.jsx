@@ -18,7 +18,7 @@ const DashboardLayout = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const isLoginPage = location.pathname === "/";
-  const isSetPasswordPage = location.pathname === "/set-password";
+  const isSetPasswordPage = location.pathname === "/set-password" || location.pathname === "/reset-password";
   const isDashboardPage = location.pathname === "/dashboard";
 
   const [loading, setLoading] = useState(false);
@@ -39,6 +39,7 @@ const DashboardLayout = ({ children }) => {
   const STORAGE_KEY = "requiredAttention_applicants";
 
   useEffect(() => {
+    if (isLoginPage || isSetPasswordPage) return;
     const userData = localStorage.getItem("user");
     if (!userData) {
       navigate("/");
@@ -51,7 +52,7 @@ const DashboardLayout = ({ children }) => {
       localStorage.clear();
       navigate("/");
     }
-  }, [navigate]);
+  }, [navigate, isLoginPage, isSetPasswordPage]);
 
   const loadRequiredAttention = useCallback(() => {
     if (userRole !== "ADMIN") return;
