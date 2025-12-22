@@ -114,8 +114,7 @@ public class EmailServiceImpl implements EmailService {
         log.info("📧 Preparing to send invitation email to: {}", toEmail);
 
         try {
-            String encodedToken = URLEncoder.encode(invitationToken, StandardCharsets.UTF_8);
-            String invitationLink = officerFrontendUrl + "/reset-password?token=" + encodedToken + "&type=officer";
+            String invitationLink = officerFrontendUrl + "/reset-password?token=" + invitationToken + "&type=officer";
             String htmlContent = buildInvitationEmailTemplate(names, employeeId, invitationLink);
 
             log.info("📤 Sending email via SMTP...");
@@ -140,8 +139,7 @@ public class EmailServiceImpl implements EmailService {
         log.info("📧 Preparing to send password reset email to: {}", toEmail);
 
         try {
-            String encodedToken = URLEncoder.encode(resetToken, StandardCharsets.UTF_8);
-            String resetLink = officerFrontendUrl + "/reset-password?token=" + encodedToken + "&type=officer";
+            String resetLink = officerFrontendUrl + "/reset-password?token=" + resetToken + "&type=officer";
             String htmlContent = buildPasswordResetEmailTemplate(names, employeeId, resetLink);
 
             log.info("📤 Sending password reset email via SMTP...");
@@ -292,9 +290,8 @@ public class EmailServiceImpl implements EmailService {
         try {
             String resetLink = null;
             if (resetToken != null && !resetToken.trim().isEmpty()) {
-                String encodedToken = URLEncoder.encode(resetToken, StandardCharsets.UTF_8);
                 String userType = "COMPANY".equalsIgnoreCase(accountType) ? "company" : "taxprofessional";
-                resetLink = taxProfessionalFrontendUrl + "/reset-password?token=" + encodedToken + "&type=" + userType;
+                resetLink = taxProfessionalFrontendUrl + "/reset-password?token=" + resetToken + "&type=" + userType;
                 log.info("🔗 Generated reset link with type: {}", userType);
             }
 
@@ -606,9 +603,8 @@ public class EmailServiceImpl implements EmailService {
         log.info("📧 Preparing to send applicant password reset email to: {} (Account type: {})", toEmail, accountType);
 
         try {
-            String encodedToken = URLEncoder.encode(resetToken, StandardCharsets.UTF_8);
             String userType = "COMPANY".equalsIgnoreCase(accountType) ? "company" : "taxprofessional";
-            String resetLink = taxProfessionalFrontendUrl + "/reset-password?token=" + encodedToken + "&type=" + userType;
+            String resetLink = taxProfessionalFrontendUrl + "/reset-password?token=" + resetToken + "&type=" + userType;
             log.info("🔗 Generated applicant reset link with type: {}", userType);
 
             String htmlContent = buildApplicantPasswordResetEmailTemplate(fullName, tpin, resetLink);

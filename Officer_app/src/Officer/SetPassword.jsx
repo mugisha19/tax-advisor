@@ -44,8 +44,9 @@ const SetPassword = () => {
 
   useEffect(() => {
     const tokenParam = searchParams.get("token");
+    const typeParam = searchParams.get("type");
     const employeeIdParam = searchParams.get("employeeId");
-    const resetParam = searchParams.get("reset"); // Check if it's a password reset
+    const resetParam = searchParams.get("reset");
 
     if (!tokenParam) {
       setError("Invalid link. Please contact your administrator.");
@@ -57,12 +58,19 @@ const SetPassword = () => {
     if (employeeIdParam) {
       setEmployeeId(employeeIdParam);
     }
-    if (resetParam === "true") {
+    if (resetParam === "true" || typeParam === "officer") {
       setIsPasswordReset(true);
     }
 
-    // Validate token with backend
-    validateToken(tokenParam);
+    // Only validate invitation tokens, skip validation for reset tokens
+    if (typeParam === "officer" && !resetParam) {
+      // This is a password reset link, skip validation
+      setTokenValid(true);
+      setValidatingToken(false);
+    } else {
+      // This is an invitation link, validate it
+      validateToken(tokenParam);
+    }
   }, [searchParams]);
 
   const validateToken = async (tokenParam) => {

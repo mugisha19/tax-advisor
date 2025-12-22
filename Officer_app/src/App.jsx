@@ -17,6 +17,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<Login />} />
           <Route path="/set-password" element={<SetPassword />} />
+          <Route path="/reset-password" element={<SetPassword />} />
 
           {/* Protected Routes */}
           <Route
