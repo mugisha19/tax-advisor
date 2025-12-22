@@ -131,7 +131,7 @@ const Login = () => {
       const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL || 'http://10.0.0.65:8080'}/api/auth/forgot-password`,
         {
-          email: resetEmail,
+          identifier: resetEmail,
         }
       );
 
