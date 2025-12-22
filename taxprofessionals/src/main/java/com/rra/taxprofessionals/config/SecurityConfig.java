@@ -62,7 +62,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://192.168.14.207:5173", "http://192.168.14.207:3000", "http://192.168.14.207:5000"));
+        configuration.setAllowedOrigins(Arrays.asList("http://10.0.0.65:5173", "http://10.0.0.65:3000", "http://10.0.0.65:5000", "https://tpms.rra.gov.rw"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList(

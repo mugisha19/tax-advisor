@@ -7,7 +7,7 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # PostgreSQL connection details (from environment or defaults)
-$PGHOST = if ($env:DB_HOST) { $env:DB_HOST } else { "192.168.14.207" }
+$PGHOST = if ($env:DB_HOST) { $env:DB_HOST } else { "10.0.0.65" }
 $PGPORT = if ($env:DB_PORT) { $env:DB_PORT } else { "5432" }
 $PGDATABASE = if ($env:DB_NAME) { $env:DB_NAME } else { "taxpayer_db_backup" }
 $PGUSER = if ($env:DB_USERNAME) { $env:DB_USERNAME } else { "postgres" }
