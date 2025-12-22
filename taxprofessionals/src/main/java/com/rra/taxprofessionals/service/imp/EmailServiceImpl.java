@@ -3,14 +3,11 @@ package com.rra.taxprofessionals.service.imp;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Properties;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.mail.MailException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import com.rra.taxprofessionals.enums.ApplicationStatus;
@@ -23,17 +20,26 @@ import com.rra.taxprofessionals.repository.DocumentRepository;
 import com.rra.taxprofessionals.repository.TaxProfessionalRepository;
 import com.rra.taxprofessionals.service.EmailService;
 
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.mail.Authenticator;
+import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.util.ByteArrayDataSource;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service("emailServiceImpl")
 @ConditionalOnProperty(name = "app.email.mock.enabled", havingValue = "false", matchIfMissing = true)
 public class EmailServiceImpl implements EmailService {
-
-    @Autowired
-    private JavaMailSender mailSender;
 
     @Autowired
     private DocumentRepository documentRepository;
@@ -53,27 +59,67 @@ public class EmailServiceImpl implements EmailService {
     @Value("${spring.mail.username}")
     private String fromEmail;
 
+    @Value("${spring.mail.password}")
+    private String mailPassword;
+
+    @Value("${spring.mail.host}")
+    private String mailHost;
+
+    @Value("${spring.mail.port}")
+    private int mailPort;
+
+    private Session getMailSession() {
+        Properties properties = new Properties();
+        properties.put("mail.smtp.auth", "true");
+        properties.put("mail.smtp.starttls.enable", "true");
+        properties.put("mail.smtp.host", mailHost);
+        properties.put("mail.smtp.port", mailPort);
+        properties.put("mail.smtp.ssl.trust", mailHost);
+        properties.put("mail.debug", "false");
+
+        return Session.getInstance(properties, new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(fromEmail, mailPassword);
+            }
+        });
+    }
+
+    private void sendEmail(String toEmail, String subject, String htmlBody, byte[] attachment, String attachmentName) throws MessagingException {
+        Session session = getMailSession();
+        Message message = new MimeMessage(session);
+        message.setFrom(new InternetAddress(fromEmail));
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+        message.setSubject(subject);
+
+        MimeBodyPart textPart = new MimeBodyPart();
+        textPart.setContent(htmlBody, "text/html; charset=utf-8");
+
+        Multipart multipart = new MimeMultipart("related");
+        multipart.addBodyPart(textPart);
+
+        if (attachment != null && attachmentName != null) {
+            MimeBodyPart attachmentPart = new MimeBodyPart();
+            DataSource source = new ByteArrayDataSource(attachment, "application/pdf");
+            attachmentPart.setDataHandler(new DataHandler(source));
+            attachmentPart.setFileName(attachmentName);
+            multipart.addBodyPart(attachmentPart);
+        }
+
+        message.setContent(multipart);
+        Transport.send(message);
+    }
+
     @Override
     public void sendInvitationEmail(String toEmail, String employeeId, String names, String invitationToken) {
         log.info("📧 Preparing to send invitation email to: {}", toEmail);
 
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Invitation to RRA Tax Professionals Platform");
-
-            // Build invitation link with correct path and parameters
-            // Format: /reset-password?token=xxx&type=officer
             String encodedToken = URLEncoder.encode(invitationToken, StandardCharsets.UTF_8);
             String invitationLink = officerFrontendUrl + "/reset-password?token=" + encodedToken + "&type=officer";
             String htmlContent = buildInvitationEmailTemplate(names, employeeId, invitationLink);
-            helper.setText(htmlContent, true);
 
             log.info("📤 Sending email via SMTP...");
-            mailSender.send(message);
+            sendEmail(toEmail, "Invitation to RRA Tax Professionals Platform", htmlContent, null, null);
 
             log.info("✅ Invitation email sent successfully to: {}", toEmail);
             log.info("📋 Invitation details - Employee ID: {}, Link: {}", employeeId, invitationLink);
@@ -81,16 +127,7 @@ public class EmailServiceImpl implements EmailService {
         } catch (MessagingException e) {
             log.error("❌ MessagingException while sending email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
-            throw new RuntimeException("Failed to create email message: " + e.getMessage(), e);
-        } catch (MailException e) {
-            log.error("❌ MailException while sending email to {}: {}", toEmail, e.getMessage());
-            log.error("Stack trace:", e);
-            log.error("🔍 Possible causes:");
-            log.error("   1. Invalid Gmail credentials (check app password)");
-            log.error("   2. 2-Step Verification not enabled on Gmail account");
-            log.error("   3. SMTP blocked by firewall");
-            log.error("   4. Incorrect email configuration");
-            throw new RuntimeException("Failed to send email via SMTP: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("❌ Unexpected error while sending email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
@@ -103,22 +140,12 @@ public class EmailServiceImpl implements EmailService {
         log.info("📧 Preparing to send password reset email to: {}", toEmail);
 
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Password Reset Request - RRA Tax Professionals Platform");
-
-            // Build reset link with correct path and parameters
-            // Format: /reset-password?token=xxx&type=officer
             String encodedToken = URLEncoder.encode(resetToken, StandardCharsets.UTF_8);
             String resetLink = officerFrontendUrl + "/reset-password?token=" + encodedToken + "&type=officer";
             String htmlContent = buildPasswordResetEmailTemplate(names, employeeId, resetLink);
-            helper.setText(htmlContent, true);
 
             log.info("📤 Sending password reset email via SMTP...");
-            mailSender.send(message);
+            sendEmail(toEmail, "Password Reset Request - RRA Tax Professionals Platform", htmlContent, null, null);
 
             log.info("✅ Password reset email sent successfully to: {}", toEmail);
             log.info("📋 Reset details - Employee ID: {}, Link: {}", employeeId, resetLink);
@@ -126,16 +153,7 @@ public class EmailServiceImpl implements EmailService {
         } catch (MessagingException e) {
             log.error("❌ MessagingException while sending password reset email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
-            throw new RuntimeException("Failed to create password reset email message: " + e.getMessage(), e);
-        } catch (MailException e) {
-            log.error("❌ MailException while sending password reset email to {}: {}", toEmail, e.getMessage());
-            log.error("Stack trace:", e);
-            log.error("🔍 Possible causes:");
-            log.error("   1. Invalid Gmail credentials (check app password)");
-            log.error("   2. 2-Step Verification not enabled on Gmail account");
-            log.error("   3. SMTP blocked by firewall");
-            log.error("   4. Incorrect email configuration");
-            throw new RuntimeException("Failed to send password reset email via SMTP: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to send password reset email: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("❌ Unexpected error while sending password reset email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
@@ -157,30 +175,16 @@ public class EmailServiceImpl implements EmailService {
         log.info("📧 Preparing to send application decision email to: {} (Status: {})", toEmail, status);
 
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-
-            // Set subject based on status
             String subject = status == ApplicationStatus.APPROVED
                     ? "Application Approved - RRA Tax Professionals Platform"
                     : "Application Decision - RRA Tax Professionals Platform";
-            helper.setSubject(subject);
 
-            // Build email content based on status
             String htmlContent = status == ApplicationStatus.APPROVED
                     ? buildApprovalEmailTemplate(applicantName, tpin)
                     : buildRejectionEmailTemplate(applicantName, tpin, rejectionReason, problematicDocumentIds);
 
-            helper.setText(htmlContent, true);
-
-            // Attach PDF
-            helper.addAttachment(fileName, new ByteArrayResource(pdfAttachment));
-
             log.info("📤 Sending decision email via SMTP...");
-            mailSender.send(message);
+            sendEmail(toEmail, subject, htmlContent, pdfAttachment, fileName);
 
             log.info("✅ Decision email sent successfully to: {} (Status: {})", toEmail, status);
             log.info("📋 Attachment: {}, Size: {} bytes", fileName, pdfAttachment.length);
@@ -188,11 +192,7 @@ public class EmailServiceImpl implements EmailService {
         } catch (MessagingException e) {
             log.error("❌ MessagingException while sending decision email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
-            throw new RuntimeException("Failed to create decision email message: " + e.getMessage(), e);
-        } catch (MailException e) {
-            log.error("❌ MailException while sending decision email to {}: {}", toEmail, e.getMessage());
-            log.error("Stack trace:", e);
-            throw new RuntimeException("Failed to send decision email via SMTP: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to send decision email: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("❌ Unexpected error while sending decision email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
@@ -205,14 +205,6 @@ public class EmailServiceImpl implements EmailService {
         log.info("📧 Sending approval email with frontend-generated certificate to: {}", toEmail);
 
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Tax Advisory License - Approved");
-
-            // Build email content
             String htmlContent = "<!DOCTYPE html>"
                     + "<html>"
                     + "<head>"
@@ -245,13 +237,8 @@ public class EmailServiceImpl implements EmailService {
                     + "</body>"
                     + "</html>";
 
-            helper.setText(htmlContent, true);
-
-            // Attach PDF certificate
-            helper.addAttachment("Tax_Professional_Certificate.pdf", new ByteArrayResource(pdfBytes));
-
             log.info("📤 Sending email via SMTP...");
-            mailSender.send(message);
+            sendEmail(toEmail, "Tax Advisory License - Approved", htmlContent, pdfBytes, "Tax_Professional_Certificate.pdf");
 
             log.info("✅ Approval email with certificate sent successfully to: {}", toEmail);
             log.info("📋 Certificate attachment size: {} bytes", pdfBytes.length);
@@ -259,9 +246,6 @@ public class EmailServiceImpl implements EmailService {
         } catch (MessagingException e) {
             log.error("❌ MessagingException while sending approval email: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to send approval email: " + e.getMessage(), e);
-        } catch (MailException e) {
-            log.error("❌ MailException while sending approval email: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to send approval email via SMTP: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("❌ Unexpected error while sending approval email: {}", e.getMessage(), e);
             throw new RuntimeException("Unexpected error sending approval email: " + e.getMessage(), e);
@@ -273,32 +257,18 @@ public class EmailServiceImpl implements EmailService {
         log.info("📧 Sending rejection email with frontend-generated letter to: {}", toEmail);
 
         try {
-            // Get tax professional to retrieve rejection reason
             TaxProfessional taxProfessional = taxProfessionalRepository.findById(tpin).orElse(null);
             String rejectionReason = taxProfessional != null ? taxProfessional.getRejectionReason() : null;
 
-            // Get problematic documents from DocumentRejection table
             List<DocumentRejection> documentRejections = documentRejectionRepository.findByTaxProfessionalTpin(tpin);
             List<Document> problematicDocs = documentRejections.stream()
                     .map(DocumentRejection::getDocument)
                     .collect(java.util.stream.Collectors.toList());
 
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Tax Advisory License Application - Decision");
-
-            // Build rejection email HTML with problematic documents
             String htmlContent = buildRejectionLetterEmailTemplate(applicantName, rejectionReason, problematicDocs);
-            helper.setText(htmlContent, true);
-
-            // Attach PDF rejection letter
-            helper.addAttachment("Rejection_Letter.pdf", new ByteArrayResource(pdfBytes));
 
             log.info("📤 Sending rejection email via SMTP...");
-            mailSender.send(message);
+            sendEmail(toEmail, "Tax Advisory License Application - Decision", htmlContent, pdfBytes, "Rejection_Letter.pdf");
 
             log.info("✅ Rejection email with letter sent successfully to: {}", toEmail);
             log.info("📋 Rejection letter attachment size: {} bytes", pdfBytes.length);
@@ -309,9 +279,6 @@ public class EmailServiceImpl implements EmailService {
         } catch (MessagingException e) {
             log.error("❌ MessagingException while sending rejection email: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to send rejection email: " + e.getMessage(), e);
-        } catch (MailException e) {
-            log.error("❌ MailException while sending rejection email: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to send rejection email via SMTP: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("❌ Unexpected error while sending rejection email: {}", e.getMessage(), e);
             throw new RuntimeException("Unexpected error sending rejection email: " + e.getMessage(), e);
@@ -323,30 +290,18 @@ public class EmailServiceImpl implements EmailService {
         log.info("📧 Preparing to send welcome password email to: {}", toEmail);
 
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Welcome to RRA Tax Professional Portal - Your Account Details");
-
-            // Build reset link if token is provided
-            // Use type parameter to distinguish between taxprofessional, company, and officer
             String resetLink = null;
             if (resetToken != null && !resetToken.trim().isEmpty()) {
                 String encodedToken = URLEncoder.encode(resetToken, StandardCharsets.UTF_8);
-                // Determine user type based on accountType
                 String userType = "COMPANY".equalsIgnoreCase(accountType) ? "company" : "taxprofessional";
-                // Reset password page with appropriate type parameter
                 resetLink = taxProfessionalFrontendUrl + "/reset-password?token=" + encodedToken + "&type=" + userType;
                 log.info("🔗 Generated reset link with type: {}", userType);
             }
 
             String htmlContent = buildWelcomePasswordEmailTemplate(toEmail, password, fullName, accountType, resetLink);
-            helper.setText(htmlContent, true);
 
             log.info("📤 Sending welcome email via SMTP...");
-            mailSender.send(message);
+            sendEmail(toEmail, "Welcome to RRA Tax Professional Portal - Your Account Details", htmlContent, null, null);
 
             log.info("✅ Welcome password email sent successfully to: {}", toEmail);
             if (resetLink != null) {
@@ -356,11 +311,7 @@ public class EmailServiceImpl implements EmailService {
         } catch (MessagingException e) {
             log.error("❌ MessagingException while sending welcome email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
-            throw new RuntimeException("Failed to create welcome email message: " + e.getMessage(), e);
-        } catch (MailException e) {
-            log.error("❌ MailException while sending welcome email to {}: {}", toEmail, e.getMessage());
-            log.error("Stack trace:", e);
-            throw new RuntimeException("Failed to send welcome email via SMTP: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to send welcome email: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("❌ Unexpected error while sending welcome email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
@@ -655,25 +606,15 @@ public class EmailServiceImpl implements EmailService {
         log.info("📧 Preparing to send applicant password reset email to: {} (Account type: {})", toEmail, accountType);
 
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Password Reset Request - RRA Tax Professional Portal");
-
-            // Build reset link for applicants with appropriate type parameter
             String encodedToken = URLEncoder.encode(resetToken, StandardCharsets.UTF_8);
-            // Determine user type based on accountType
             String userType = "COMPANY".equalsIgnoreCase(accountType) ? "company" : "taxprofessional";
             String resetLink = taxProfessionalFrontendUrl + "/reset-password?token=" + encodedToken + "&type=" + userType;
             log.info("🔗 Generated applicant reset link with type: {}", userType);
 
             String htmlContent = buildApplicantPasswordResetEmailTemplate(fullName, tpin, resetLink);
-            helper.setText(htmlContent, true);
 
             log.info("📤 Sending applicant password reset email via SMTP...");
-            mailSender.send(message);
+            sendEmail(toEmail, "Password Reset Request - RRA Tax Professional Portal", htmlContent, null, null);
 
             log.info("✅ Applicant password reset email sent successfully to: {}", toEmail);
             log.info("📋 Reset details - TPIN: {}, Link: {}", tpin, resetLink);
@@ -681,11 +622,7 @@ public class EmailServiceImpl implements EmailService {
         } catch (MessagingException e) {
             log.error("❌ MessagingException while sending applicant password reset email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
-            throw new RuntimeException("Failed to create applicant password reset email message: " + e.getMessage(), e);
-        } catch (MailException e) {
-            log.error("❌ MailException while sending applicant password reset email to {}: {}", toEmail, e.getMessage());
-            log.error("Stack trace:", e);
-            throw new RuntimeException("Failed to send applicant password reset email via SMTP: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to send applicant password reset email: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("❌ Unexpected error while sending applicant password reset email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
