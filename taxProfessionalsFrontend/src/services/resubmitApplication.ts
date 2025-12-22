@@ -8,11 +8,7 @@ export const resubmitApplication = (tpin: string | number) => {
     // Get authentication token from localStorage
     const token = localStorage.getItem('authToken');
     
-    console.log('ResubmitApplication Service: TPIN:', tpinString);
-    console.log('ResubmitApplication Service: Token exists:', !!token);
-    
     if (!token) {
-        console.error('ResubmitApplication Service: No authentication token found in localStorage');
         return Promise.reject(new Error('Authentication token is missing. Please login again.'));
     }
     
@@ -27,7 +23,6 @@ export const resubmitApplication = (tpin: string | number) => {
     
     // Construct URL with TPIN
     const requestUrl = `${REST_API_BASE_URL}/${tpinString}/resubmit`;
-    console.log('ResubmitApplication Service: Request URL:', requestUrl);
     
     return axios.post(requestUrl, {}, {
         headers: headers

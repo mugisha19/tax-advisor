@@ -58,7 +58,6 @@ const Login = () => {
       );
 
       const data = response.data;
-      console.log("Login response:", data);
 
       if (!data.success) {
         setError(data.message || "Login failed");
@@ -95,8 +94,6 @@ const Login = () => {
       role = role.replace(/^ROLE_/i, "");
       role = role.toUpperCase();
 
-      console.log("Normalized role:", role);
-
       localStorage.setItem("token", token);
       localStorage.setItem(
         "user",
@@ -113,7 +110,6 @@ const Login = () => {
         setLoading(false);
       }
     } catch (err) {
-      console.error("Login error:", err);
       if (err.response) {
         setError(err.response.data?.message || "Invalid username or password");
       } else if (err.request) {
@@ -156,7 +152,6 @@ const Login = () => {
         );
       }
     } catch (err) {
-      console.error("Forgot password error:", err);
       if (err.response?.status === 404) {
         setResetError("No account found with this email address.");
       } else {

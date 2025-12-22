@@ -9,7 +9,6 @@ interface ResetPasswordData {
 }
 
 export const resetPassword = (data: ResetPasswordData) => {
-  console.log("ResetPassword Service: Resetting password with token");
 
   return axios.post(REST_API_BASE_URL, data, {
     headers: {

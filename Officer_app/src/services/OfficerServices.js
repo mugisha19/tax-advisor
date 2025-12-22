@@ -48,8 +48,6 @@ export const reviewApplication = (tpin, status, comment = null, problematicDocum
     requestBody.problematicDocumentIds = problematicDocumentIds;
   }
 
-  console.log("Sending review request:", requestBody);
-
   return api.post("/review", requestBody);
 };
 

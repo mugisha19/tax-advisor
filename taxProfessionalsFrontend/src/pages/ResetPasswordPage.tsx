@@ -65,7 +65,6 @@ const ResetPasswordPage: React.FC = () => {
         navigate("/");
       }, 3000);
     } catch (error: any) {
-      console.error("ResetPasswordPage: Error:", error);
       setError(
         error.response?.data?.message || 
         "Failed to reset password. The link may have expired. Please request a new one."

@@ -19,12 +19,9 @@ const LoginPage: React.FC = () => {
     setError("");
 
     const tin = tinNumber.trim();
-    console.log("LoginPage: Submitting login - TIN:", tin, "Type:", typeof tin);
 
     try {
       const response = await login(tin, password);
-      console.log("LoginPage: Login successful:", response);
-      console.log("LoginPage: Response data:", response.data);
 
       localStorage.setItem("tinNumber", tin);
 
@@ -43,7 +40,6 @@ const LoginPage: React.FC = () => {
           ? token.substring(7)
           : token;
         localStorage.setItem("authToken", cleanToken);
-        console.log("LoginPage: Token stored successfully in localStorage");
       } else {
         console.warn("LoginPage: No token found in response.");
       }
@@ -60,13 +56,9 @@ const LoginPage: React.FC = () => {
           navigate("/dashboard");
         }
       } catch (err) {
-        // If we can't determine account type, default to individual dashboard
-        console.error("LoginPage: Error checking account type:", err);
         navigate("/dashboard");
       }
     } catch (error: any) {
-      console.error("LoginPage: Login error:", error);
-      console.error("LoginPage: Error response:", error.response);
       setLoading(false);
 
       if (error.response?.data?.message) {

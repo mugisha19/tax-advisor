@@ -7,14 +7,11 @@ interface ForgotPasswordData {
 }
 
 export const forgotPassword = (tinNumber: string) => {
-  console.log("ForgotPassword Service: Requesting password reset for:", tinNumber);
 
   // Backend expects a single 'identifier' field (can be TIN or email)
   const requestData = { 
     identifier: tinNumber
   };
-  
-  console.log("ForgotPassword Service: Request body:", JSON.stringify(requestData));
 
   return axios.post(REST_API_BASE_URL, requestData, {
     headers: {

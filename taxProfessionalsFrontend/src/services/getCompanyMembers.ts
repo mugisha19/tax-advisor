@@ -9,13 +9,7 @@ export const getCompanyMembers = (companyId: number | string): Promise<{
 }> => {
   const token = localStorage.getItem("authToken");
 
-  console.log("GetCompanyMembers Service: Company ID:", companyId);
-  console.log("GetCompanyMembers Service: Token exists:", !!token);
-
   if (!token) {
-    console.error(
-      "GetCompanyMembers Service: No authentication token found in localStorage"
-    );
     return Promise.reject(
       new Error("Authentication token is missing. Please login again.")
     );
@@ -31,7 +25,6 @@ export const getCompanyMembers = (companyId: number | string): Promise<{
 
   // Use companyId directly (could be number or string like tinCompany)
   const url = `${REST_API_BASE_URL}/${companyId}/members`;
-  console.log("GetCompanyMembers Service: Request URL:", url);
 
   return axios.get(url, {
     headers: headers,

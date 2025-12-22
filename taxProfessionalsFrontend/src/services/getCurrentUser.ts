@@ -30,12 +30,7 @@ export const getCurrentUser = (): Promise<{
   // Get authentication token from localStorage
   const token = localStorage.getItem("authToken");
 
-  console.log("GetCurrentUser Service: Token exists:", !!token);
-
   if (!token) {
-    console.error(
-      "GetCurrentUser Service: No authentication token found in localStorage"
-    );
     return Promise.reject(
       new Error("Authentication token is missing. Please login again.")
     );
@@ -50,8 +45,6 @@ export const getCurrentUser = (): Promise<{
   headers["Authorization"] = token.startsWith("Bearer ")
     ? token
     : `Bearer ${token}`;
-
-  console.log("GetCurrentUser Service: Request URL:", REST_API_BASE_URL);
 
   return axios.get(REST_API_BASE_URL, {
     headers: headers,

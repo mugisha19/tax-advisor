@@ -11,13 +11,7 @@ export const downloadCertificate = (tpin: string): Promise<{ data: Blob }> => {
   // Get authentication token from localStorage
   const token = localStorage.getItem("authToken");
 
-  console.log("DownloadCertificate Service: TPIN:", tpinString);
-  console.log("DownloadCertificate Service: Token exists:", !!token);
-
   if (!token) {
-    console.error(
-      "DownloadCertificate Service: No authentication token found in localStorage"
-    );
     return Promise.reject(
       new Error("Authentication token is missing. Please login again.")
     );
@@ -32,11 +26,6 @@ export const downloadCertificate = (tpin: string): Promise<{ data: Blob }> => {
   headers["Authorization"] = token.startsWith("Bearer ")
     ? token
     : `Bearer ${token}`;
-
-  console.log(
-    "DownloadCertificate Service: Request URL:",
-    `${REST_API_BASE_URL}/${tpinString}`
-  );
 
   return axios.get(`${REST_API_BASE_URL}/${tpinString}`, {
     headers: headers,

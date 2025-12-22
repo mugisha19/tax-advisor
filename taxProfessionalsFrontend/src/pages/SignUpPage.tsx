@@ -18,7 +18,6 @@ import { validateTin } from "../services/ValidateTin";
 import { sendPasswordEmail } from "../services/SendPasswordEmail";
 
 const SignUpPage: React.FC = () => {
-  console.log("SignUpPage: Component rendering");
 
   // Step management
   const [accountType, setAccountType] = useState("");
@@ -100,13 +99,10 @@ const SignUpPage: React.FC = () => {
 
     try {
       const response = await validateTin(validationTin);
-      console.log("SignUpPage: TIN validation response:", response.data);
 
       // The response structure is: { success, message, data: {...}, timestamp }
       const apiResponse = response.data;
       const supplierData = apiResponse.data; // The actual supplier data
-
-      console.log("SignUpPage: TIN validation data:", supplierData);
 
       setValidationData(apiResponse);
 
@@ -133,7 +129,6 @@ const SignUpPage: React.FC = () => {
       // Set the validated TIN
       setValidationTin(supplierData.SupplierTin || validationTin);
     } catch (err: any) {
-      console.error("SignUpPage: TIN validation error:", err);
       setValidating(false);
       setError(
         err.response?.data?.message ||
@@ -174,7 +169,6 @@ const SignUpPage: React.FC = () => {
         accountType,
       };
 
-      console.log("SignUpPage: Registering user:", userData);
 
       if (accountType === "INDIVIDUAL") {
         response = await addApplicant(userData);
@@ -198,15 +192,8 @@ const SignUpPage: React.FC = () => {
           category: category || "",
           applicantNames: fullname || "",
         };
-
-        console.log(
-          "SignUpPage: Registering company with data (TIN + password required, others optional):",
-          companyData
-        );
         response = await addCompany(companyData);
       }
-
-      console.log("SignUpPage: Registration successful:", response.data);
 
       // Send password email after successful registration
       try {
@@ -216,9 +203,7 @@ const SignUpPage: React.FC = () => {
           fullName: accountType === "INDIVIDUAL" ? fullname : businessName,
           accountType: accountType,
         });
-        console.log("SignUpPage: Password email sent successfully");
       } catch (emailErr: any) {
-        console.error("SignUpPage: Failed to send password email:", emailErr);
         // Don't block the registration flow if email fails
       }
 
@@ -229,7 +214,6 @@ const SignUpPage: React.FC = () => {
       );
       navigate("/");
     } catch (err: any) {
-      console.error("SignUpPage: Registration error:", err);
       setError(
         err.response?.data?.message || "Registration failed. Please try again."
       );

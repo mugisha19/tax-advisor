@@ -59,10 +59,6 @@ const MyReviews = () => {
             return { tpin: app.tpin, docs };
           })
           .catch((err) => {
-            console.error(
-              `[Documents] Error fetching documents for TPIN ${app.tpin}:`,
-              err
-            );
             return { tpin: app.tpin, docs: [] };
           })
       );
@@ -101,7 +97,6 @@ const MyReviews = () => {
         throw new Error("No file data received");
       }
     } catch (err) {
-      console.error("Download error:", err);
       setError(err.message || "Download failed");
     }
   };

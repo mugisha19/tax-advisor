@@ -91,7 +91,6 @@ export default function ApplicantDashboard() {
         setError(null);
 
         const response = await getCurrentUser();
-        console.log("Dashboard: Application data:", response.data);
 
         const userData = response.data.data;
 
@@ -105,7 +104,6 @@ export default function ApplicantDashboard() {
         const appData = userData as unknown as Application;
         setApplication(appData);
       } catch (err: any) {
-        console.error("Dashboard: Error fetching application:", err);
 
         if (err.response?.status === 401) {
           // Unauthorized - redirect to login
@@ -136,11 +134,9 @@ export default function ApplicantDashboard() {
         setDocumentsLoading(true);
 
         const response = await getAllDocuments(application.tpin);
-        console.log("Dashboard: Documents data:", response.data);
 
         setDocuments(response.data.data || []);
       } catch (err: any) {
-        console.error("Dashboard: Error fetching documents:", err);
         showToast(
           err.response?.data?.message || "Failed to load documents",
           "error"
@@ -204,7 +200,6 @@ export default function ApplicantDashboard() {
         "success"
       );
     } catch (err: any) {
-      console.error("Dashboard: Error resubmitting application:", err);
       showToast(
         err.response?.data?.message || "Failed to resubmit application",
         "error"
@@ -239,7 +234,6 @@ export default function ApplicantDashboard() {
 
       showToast("Document downloaded successfully", "success");
     } catch (err: any) {
-      console.error("Dashboard: Error downloading certificate:", err);
       showToast(
         err.response?.data?.message || "Failed to download certificate",
         "error"
@@ -268,7 +262,6 @@ export default function ApplicantDashboard() {
 
       showToast("Document opened in new tab", "success");
     } catch (err: any) {
-      console.error("Dashboard: Error viewing document:", err);
       showToast(
         err.response?.data?.message || "Failed to view document",
         "error"
@@ -304,7 +297,6 @@ export default function ApplicantDashboard() {
 
       showToast("Document downloaded successfully", "success");
     } catch (err: any) {
-      console.error("Dashboard: Error downloading document:", err);
       showToast(
         err.response?.data?.message || "Failed to download document",
         "error"
@@ -377,7 +369,6 @@ export default function ApplicantDashboard() {
           showToast("Document replaced successfully", "success");
         }
       } catch (err: any) {
-        console.error("Dashboard: Error replacing document:", err);
         showToast(
           err.response?.data?.message || "Failed to replace document",
           "error"

@@ -13,13 +13,7 @@ export const updateDocument = (documentId: string | number, file: File, document
     // Get authentication token from localStorage
     const token = localStorage.getItem('authToken');
     
-    console.log('UpdateDocument Service: Document ID:', documentIdString);
-    console.log('UpdateDocument Service: Document Type:', documentType);
-    console.log('UpdateDocument Service: File Name:', file.name);
-    console.log('UpdateDocument Service: Token exists:', !!token);
-    
     if (!token) {
-        console.error('UpdateDocument Service: No authentication token found in localStorage');
         return Promise.reject(new Error('Authentication token is missing. Please login again.'));
     }
     
@@ -33,7 +27,6 @@ export const updateDocument = (documentId: string | number, file: File, document
     
     // Replace {docId} placeholder in URL or construct URL properly
     const requestUrl = `${REST_API_BASE_URL}/${documentIdString}`;
-    console.log('UpdateDocument Service: Request URL:', requestUrl);
     
     // Note: Don't set Content-Type for multipart/form-data, let browser set it with boundary
     return axios.put(requestUrl, formData, {

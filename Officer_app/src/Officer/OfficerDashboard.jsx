@@ -158,7 +158,6 @@ const OfficerDashboard = () => {
       try {
         const user = JSON.parse(userData);
         setUserRole(user.role);
-        console.log("Current user role:", user.role);
         // Fetch officer profile if user is an OFFICER to get employeeId
         if (user.role === "OFFICER") {
           fetchOfficerProfile();
@@ -173,10 +172,8 @@ const OfficerDashboard = () => {
       const { data } = await getOfficerProfile();
       if (data.success && data.data) {
         setCurrentOfficerEmployeeId(data.data.employeeId);
-        console.log("Current officer employeeId:", data.data.employeeId);
       }
     } catch (err) {
-      console.error("Error fetching officer profile:", err);
       setError("Failed to load officer profile");
     }
   };
@@ -206,10 +203,6 @@ const OfficerDashboard = () => {
               return { tpin: tpin, docs };
             })
             .catch((err) => {
-              console.error(
-                `[Documents] Error fetching documents for TPIN ${tpin}:`,
-                err
-              );
               return { tpin: tpin, docs: [] };
             });
         });
@@ -288,7 +281,6 @@ const OfficerDashboard = () => {
 
           setMessage("✅ Application approved! Certificate sent via email.");
         } catch (pdfError) {
-          console.error("Certificate generation error:", pdfError);
           setError(
             "Application approved, but certificate generation failed. Please generate manually."
           );
@@ -331,7 +323,6 @@ const OfficerDashboard = () => {
             "✅ Application rejected. Rejection letter sent via email."
           );
         } catch (pdfError) {
-          console.error("Rejection letter generation error:", pdfError);
           setError(
             "Application rejected, but rejection letter generation failed. Please generate manually."
           );
@@ -393,7 +384,6 @@ const OfficerDashboard = () => {
         throw new Error("No file data received");
       }
     } catch (err) {
-      console.error("Download error:", err);
       setError(err.message || "Download failed");
     }
   };
@@ -419,7 +409,6 @@ const OfficerDashboard = () => {
         throw new Error("No file data received");
       }
     } catch (err) {
-      console.error("View document error:", err);
       setError(err.message || "Failed to load document");
       setTimeout(() => setError(""), 5000);
     } finally {
@@ -510,7 +499,6 @@ const OfficerDashboard = () => {
 
               resolve(pdfBlob);
             } catch (error) {
-              console.error("PDF generation error details:", error);
               setShowCertificate(false);
               setCertificateApplicant(null);
               setCertificateType("APPROVAL");
@@ -520,7 +508,6 @@ const OfficerDashboard = () => {
           }, 500); // Wait for component to render
         }, 100); // Wait for state to be set
       } catch (error) {
-        console.error("PDF generation setup error:", error);
         reject(error);
       }
     });
@@ -549,7 +536,6 @@ const OfficerDashboard = () => {
       setMessage("Certificate downloaded successfully!");
       setTimeout(() => setMessage(""), 3000);
     } catch (err) {
-      console.error("PDF generation error:", err);
       setError("Failed to generate certificate. Please try again.");
       setTimeout(() => setError(""), 5000);
     } finally {
@@ -588,7 +574,6 @@ const OfficerDashboard = () => {
       setMessage("Rejection letter downloaded successfully!");
       setTimeout(() => setMessage(""), 3000);
     } catch (err) {
-      console.error("PDF generation error:", err);
       setError("Failed to generate rejection letter. Please try again.");
       setTimeout(() => setError(""), 5000);
     } finally {
@@ -625,7 +610,6 @@ const OfficerDashboard = () => {
       );
       setTimeout(() => setMessage(""), 5000);
     } catch (err) {
-      console.error("Certificate regeneration error:", err);
       setError("Failed to regenerate certificate. Please try again.");
       setTimeout(() => setError(""), 5000);
     } finally {
@@ -894,7 +878,6 @@ const OfficerDashboard = () => {
       );
       setTimeout(() => setMessage(""), 3000);
     } catch (err) {
-      console.error("Export error:", err);
       setError("Failed to export to Excel. Please try again.");
       setTimeout(() => setError(""), 3000);
     }

@@ -104,7 +104,6 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
       const docsResponse = await getAllDocuments(member.tpin);
       setDocuments(docsResponse.data.data || []);
     } catch (err: any) {
-      console.error("MemberDetailsModal: Error fetching member data:", err);
       showToast(
         err.response?.data?.message || "Failed to load member details",
         "error"
@@ -136,7 +135,6 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
 
       showToast("Document opened in new tab", "success");
     } catch (err: any) {
-      console.error("MemberDetailsModal: Error viewing document:", err);
       showToast(
         err.response?.data?.message || "Failed to view document",
         "error"
@@ -173,7 +171,6 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
 
       showToast("Document downloaded successfully", "success");
     } catch (err: any) {
-      console.error("MemberDetailsModal: Error downloading document:", err);
       showToast(
         err.response?.data?.message || "Failed to download document",
         "error"
@@ -275,7 +272,6 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
           showToast("Document replaced successfully", "success");
         }
       } catch (err: any) {
-        console.error("MemberDetailsModal: Error replacing document:", err);
         showToast(
           err.response?.data?.message || "Failed to replace document",
           "error"
@@ -319,7 +315,6 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
           : "Rejection letter downloaded successfully";
       showToast(message, "success");
     } catch (err: any) {
-      console.error("MemberDetailsModal: Error downloading document:", err);
 
       // Handle 403 Forbidden - likely backend permission issue for company admins
       if (err.response?.status === 403) {
@@ -380,7 +375,6 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
         "success"
       );
     } catch (err: any) {
-      console.error("MemberDetailsModal: Error resubmitting application:", err);
       showToast(
         err.response?.data?.message || "Failed to resubmit application",
         "error"
@@ -491,42 +485,12 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
   // Debug logging for problematic documents
   useEffect(() => {
     if (application && isOpen) {
-      console.log("=== MemberDetailsModal Debug Info ===");
-      console.log("Application Status:", application.status);
-      console.log("Rejection Count:", application.rejectionCount);
-      console.log("Has Reapplied:", application.hasReapplied);
-      console.log("Is First Rejection:", isFirstRejection);
-      console.log("Is Second Rejection:", isSecondRejection);
-      console.log(
-        "Can Resubmit Application:",
-        canResubmitApplication(application)
-      );
-      console.log(
-        "Problematic Document IDs:",
-        application.problematicDocumentIds
-      );
-      console.log("Updated Document IDs:", Array.from(updatedDocumentIds));
-      console.log("Has Problematic Documents:", hasProblematicDocuments);
-      console.log(
-        "All Problematic Docs Updated Locally:",
-        allProblematicDocsUpdatedLocally
-      );
-      console.log("Can Resubmit (final):", canResubmit);
-      console.log("Can Update Documents:", canUpdateDocuments);
-      console.log("Documents Count:", documents.length);
-      console.log(
-        "Documents with IDs:",
-        documents.map((d) => ({ docId: d.docId, type: d.documentType }))
-      );
+      
       documents.forEach((doc) => {
         const isProblematic = isProblematicDocument(doc.docId);
         const isUpdated = updatedDocumentIds.has(doc.docId);
-        console.log(
-          `Document ${doc.docId} (${doc.documentType}): Is Problematic = ${isProblematic}, Is Updated = ${isUpdated}`
-        );
+       
       });
-      console.log("Remaining Problematic Docs:", remainingProblematicDocs);
-      console.log("=====================================");
     }
   }, [
     application,

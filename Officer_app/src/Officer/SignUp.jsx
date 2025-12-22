@@ -52,8 +52,6 @@ const SignUp = () => {
       officerType,
     };
 
-    console.log("Sending officer data:", officer);
-
     try {
       const token = localStorage.getItem("token");
 
@@ -67,8 +65,6 @@ const SignUp = () => {
           },
         }
       );
-
-      console.log("Create officer response:", response.data);
 
       if (response.data.success) {
         setSuccess(
@@ -87,8 +83,6 @@ const SignUp = () => {
         setError(response.data.message || "Failed to create officer");
       }
     } catch (err) {
-      console.error("Error creating officer:", err);
-      console.error("Error response:", err.response);
 
       if (err.response?.status === 409) {
         setError("An officer with this Employee ID or Email already exists");

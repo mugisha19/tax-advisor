@@ -12,17 +12,7 @@ export const addCompanyMember = (
 }> => {
   const token = localStorage.getItem("authToken");
 
-  console.log("AddCompanyMember Service: Company ID:", companyId);
-  console.log(
-    "AddCompanyMember Service: Member data:",
-    JSON.stringify(memberData, null, 2)
-  );
-  console.log("AddCompanyMember Service: Token exists:", !!token);
-
   if (!token) {
-    console.error(
-      "AddCompanyMember Service: No authentication token found in localStorage"
-    );
     return Promise.reject(
       new Error("Authentication token is missing. Please login again.")
     );
@@ -38,7 +28,6 @@ export const addCompanyMember = (
     : `Bearer ${token}`;
 
   const url = `${REST_API_BASE_URL}/${companyId}/members`;
-  console.log("AddCompanyMember Service: Request URL:", url);
 
   return axios.post(url, memberData, {
     headers: headers,

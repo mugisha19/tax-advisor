@@ -83,7 +83,6 @@ const DocumentPage: React.FC = () => {
         setCheckingStatus(true);
 
         const response = await getCurrentUser();
-        console.log("DocumentPage: Application data:", response.data);
 
         const userData = response.data.data;
         
@@ -121,10 +120,7 @@ const DocumentPage: React.FC = () => {
                 // Endpoint might not exist yet (401/404) - this is expected
                 if (err.response?.status === 401 || err.response?.status === 404) {
                   console.log("DocumentPage: Members endpoint not available, using members from response");
-                } else {
-                  console.error("DocumentPage: Error fetching members:", err);
                 }
-                // Members from response are already set above, so we're good
               }
             }
             
@@ -143,7 +139,6 @@ const DocumentPage: React.FC = () => {
               }
             } catch (err: any) {
               // If we can't fetch member details, allow upload (backend will validate)
-              console.log("DocumentPage: Could not fetch member application details:", err);
               setIsReapply(false);
             }
           } else {
@@ -179,7 +174,6 @@ const DocumentPage: React.FC = () => {
           }
         }
       } catch (err: any) {
-        console.error("DocumentPage: Error fetching application:", err);
 
         if (err.response?.status === 401) {
           // Unauthorized - redirect to login
@@ -395,19 +389,12 @@ const DocumentPage: React.FC = () => {
         });
       }
 
-      console.log("DocumentPage: Uploading all documents");
-      console.log("DocumentPage: TIN:", tinNumber);
-      console.log("DocumentPage: Is Reapply:", isReapply);
-      console.log("DocumentPage: Total documents to upload:", documents.length);
-
       // Determine TPIN to use: selected member TPIN for company admin, or logged-in user's TPIN
       const tpinToUse = selectedMemberTpin || tinNumber;
       
       // Upload all documents (each with tpin, documentType, and file)
       uploadAllDocuments(tinNumber, documents, selectedMemberTpin || undefined)
         .then((response: any) => {
-          console.log("DocumentPage: Upload successful:", response);
-          console.log("DocumentPage: Response data:", response.data);
           setLoading(false);
 
           if (isReapply) {
@@ -428,12 +415,6 @@ const DocumentPage: React.FC = () => {
           }
         })
         .catch((error: any) => {
-          console.error("DocumentPage: Upload error:", error);
-          console.error("DocumentPage: Error response:", error.response);
-          console.error(
-            "DocumentPage: Error response data:",
-            error.response?.data
-          );
           setLoading(false);
 
           if (error.response?.data?.message) {

@@ -11,8 +11,6 @@ interface SendPasswordEmailData {
 }
 
 export const sendPasswordEmail = (data: SendPasswordEmailData) => {
-  console.log("SendPasswordEmail Service: Sending password email");
-  console.log("SendPasswordEmail Service: Request data:", JSON.stringify(data, null, 2));
 
   // Always include reset link option
   const emailData = {

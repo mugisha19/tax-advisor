@@ -58,7 +58,6 @@ const AddMemberPage: React.FC = () => {
         };
         setCompanyAccount(companyData);
       } catch (err: any) {
-        console.error("AddMemberPage: Auth error:", err);
         if (err.response?.status === 401) {
           localStorage.removeItem("authToken");
           localStorage.removeItem("tinNumber");
@@ -107,8 +106,6 @@ const AddMemberPage: React.FC = () => {
         phoneNumber: phoneNumber.trim(),
       };
 
-      console.log("AddMemberPage: Submitting member data:", memberData);
-
       // Use companyId if available, otherwise use companyTin
       const companyIdentifier =
         companyAccount.companyId && companyAccount.companyId > 0
@@ -122,7 +119,6 @@ const AddMemberPage: React.FC = () => {
           navigate("/company-dashboard");
         })
         .catch((error) => {
-          console.error("AddMemberPage: Error adding member:", error);
           setLoading(false);
 
           if (error.response?.data) {

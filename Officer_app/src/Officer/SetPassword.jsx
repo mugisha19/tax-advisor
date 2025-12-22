@@ -85,7 +85,6 @@ const SetPassword = () => {
         setTokenValid(false);
       }
     } catch (err) {
-      console.error("Token validation error:", err);
       setError(
         err.response?.data?.message ||
           "Unable to validate link. Please try again or contact your administrator."
@@ -164,7 +163,6 @@ const SetPassword = () => {
         );
       }
     } catch (err) {
-      console.error("Set password error:", err);
       if (err.response?.status === 400) {
         setError(
           err.response.data?.message ||

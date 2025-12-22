@@ -155,7 +155,6 @@ const DashboardLayout = ({ children }) => {
         });
       }
     } catch (err) {
-      console.error(err);
       setError("Failed to load dashboard data.");
     } finally {
       setLoading(false);

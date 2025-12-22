@@ -22,9 +22,6 @@ const ForgotPasswordPage: React.FC = () => {
       setSuccess(true);
       setError("");
     } catch (error: any) {
-      console.error("ForgotPasswordPage: Error:", error);
-      console.error("ForgotPasswordPage: Error response data:", error.response?.data);
-      console.error("ForgotPasswordPage: Error response status:", error.response?.status);
       setError(
         error.response?.data?.message || 
         error.response?.data?.error ||

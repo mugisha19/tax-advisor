@@ -55,7 +55,6 @@ export default function ProfilePage() {
         setError(null);
 
         const response = await getCurrentUser();
-        console.log("ProfilePage: Application data:", response.data);
 
         const userData = response.data.data;
         
@@ -65,14 +64,6 @@ export default function ProfilePage() {
         
         // Map company fields to standard application fields for consistent rendering
         if (isCompanyAccount) {
-          console.log("ProfilePage: Raw company data from backend:", userData);
-          console.log("ProfilePage: Available date fields:", {
-            applicationDate: userData.applicationDate,
-            createdAt: userData.createdAt,
-            registrationDate: userData.registrationDate,
-            registeredAt: userData.registeredAt,
-            createdDate: userData.createdDate,
-          });
           
           const mappedData = {
             ...userData,
@@ -83,14 +74,11 @@ export default function ProfilePage() {
             businessStatus: userData.status || userData.businessStatus || "COMPANY",
             applicationDate: userData.applicationDate || userData.createdAt || userData.registrationDate || userData.registeredAt || userData.createdDate,
           };
-          console.log("ProfilePage: Mapped company data:", mappedData);
-          console.log("ProfilePage: Final applicationDate:", mappedData.applicationDate);
           setApplication(mappedData);
         } else {
           setApplication(userData);
         }
       } catch (err: any) {
-        console.error("ProfilePage: Error fetching application:", err);
 
         if (err.response?.status === 401) {
           // Unauthorized - redirect to login
@@ -119,7 +107,6 @@ export default function ProfilePage() {
 
       // Skip document fetching for company accounts
       if (isCompany) {
-        console.log("ProfilePage: Company account detected, skipping documents fetch");
         setDocumentsLoading(false);
         setDocuments([]);
         return;
@@ -129,21 +116,17 @@ export default function ProfilePage() {
       const tin = application.tpin;
       
       if (!tin) {
-        console.log("ProfilePage: No TPIN available, skipping documents fetch");
         setDocumentsLoading(false);
         return;
       }
 
       try {
         setDocumentsLoading(true);
-        console.log("ProfilePage: Fetching documents for TPIN:", tin);
 
         const response = await getAllDocuments(tin);
-        console.log("ProfilePage: Documents data:", response.data);
 
         setDocuments(response.data.data || []);
       } catch (err: any) {
-        console.error("ProfilePage: Error fetching documents:", err);
         // Don't show error toast for documents, just set empty array
         setDocuments([]);
       } finally {

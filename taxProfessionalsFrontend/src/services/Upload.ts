@@ -29,15 +29,9 @@ export const uploadDocument = (
     
     // Get authentication token from localStorage
     const token = localStorage.getItem('authToken');
-    
-    console.log('Upload Service: TIN:', tpinString);
-    console.log('Upload Service: Member TPIN:', memberTpin);
-    console.log('Upload Service: Document Type:', documentType);
-    console.log('Upload Service: File Name:', file.name);
-    console.log('Upload Service: Token exists:', !!token);
+
     
     if (!token) {
-        console.error('Upload Service: No authentication token found in localStorage');
         return Promise.reject(new Error('Authentication token is missing. Please login again.'));
     }
     
@@ -48,9 +42,6 @@ export const uploadDocument = (
     
     // Add Authorization header with Bearer prefix
     headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-    
-    console.log('Upload Service: Request URL:', REST_API_BASE_URL);
-    console.log('Upload Service: Headers:', { ...headers, Authorization: headers.Authorization?.substring(0, 20) + '...' });
     
     // Note: Don't set Content-Type for multipart/form-data, let browser set it with boundary
     return axios.post(REST_API_BASE_URL, formData, {

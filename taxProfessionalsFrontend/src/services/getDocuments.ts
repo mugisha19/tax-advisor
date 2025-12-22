@@ -13,13 +13,7 @@ export const getAllDocuments = (
   // Get authentication token from localStorage
   const token = localStorage.getItem("authToken");
 
-  console.log("GetDocuments Service: TIN:", tpinString);
-  console.log("GetDocuments Service: Token exists:", !!token);
-
   if (!token) {
-    console.error(
-      "GetDocuments Service: No authentication token found in localStorage"
-    );
     return Promise.reject(
       new Error("Authentication token is missing. Please login again.")
     );
@@ -34,11 +28,6 @@ export const getAllDocuments = (
   headers["Authorization"] = token.startsWith("Bearer ")
     ? token
     : `Bearer ${token}`;
-
-  console.log(
-    "GetDocuments Service: Request URL:",
-    `${REST_API_BASE_URL}/${tpinString}`
-  );
 
   return axios.get(`${REST_API_BASE_URL}/${tpinString}`, {
     headers: headers,

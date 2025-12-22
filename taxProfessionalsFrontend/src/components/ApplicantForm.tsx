@@ -15,18 +15,11 @@ interface InputProps {
 }
 
 function ApplicantForm({ label, icon, type, value, onChange, placeholder, applicantData, disabled }: InputProps) {
-  // Debug logging
-  console.log(`ApplicantForm [${label}]:`, {
-    applicantData,
-    isArray: Array.isArray(applicantData),
-    length: Array.isArray(applicantData) ? applicantData.length : 'N/A',
-    type: typeof applicantData
-  });
+
 
   // If applicantData is provided (even if empty), render as dropdown
   if (applicantData !== undefined && applicantData !== null) {
     const dataArray = Array.isArray(applicantData) ? applicantData : [];
-    console.log(`ApplicantForm [${label}]: Rendering dropdown with ${dataArray.length} items`);
     return (
       <div className={"flex flex-col"}>
         <label className="text-gray-700 font-medium mb-2">{label}</label>

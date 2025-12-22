@@ -21,12 +21,9 @@ export interface SupplierData {
 }
 
 export const validateTin = (tin: string): Promise<{ data: { success: boolean; data: SupplierData } }> => {
-  console.log("ValidateTin Service: Validating TIN:", tin);
 
   // Call our backend endpoint which proxies to external API
   const url = `${REST_API_BASE_URL}/${tin}`;
-
-  console.log("ValidateTin Service: Request URL:", url);
 
   return axios.get(url, {
     headers: {

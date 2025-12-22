@@ -88,10 +88,7 @@ function ApplicantPage() {
                   console.log(
                     "ApplicantPage: Members endpoint not available, using members from response"
                   );
-                } else {
-                  console.error("ApplicantPage: Error fetching members:", err);
                 }
-                // Members from response are already set above, so we're good
               }
             }
           } else {
@@ -101,7 +98,6 @@ function ApplicantPage() {
           }
         }
       } catch (err: any) {
-        console.error("ApplicantPage: Auth error:", err);
         if (err.response?.status === 401) {
           localStorage.removeItem("authToken");
           localStorage.removeItem("tinNumber");
@@ -117,8 +113,6 @@ function ApplicantPage() {
     getProvince()
       .then((response) => {
         // Handle nested data structure: response.data.data or response.data
-        console.log("Province API Full Response:", response);
-        console.log("Province API Response Data:", response.data);
 
         // Try different possible structures
         let data: any[] = [];
@@ -133,12 +127,9 @@ function ApplicantPage() {
           );
           data = Array.isArray(foundArray) ? foundArray : [];
         }
-
-        console.log("Final Province Data:", data);
         setProvincedata(data);
       })
       .catch((error) => {
-        console.error("Error fetching provinces:", error);
         setProvincedata([]);
       });
   }, [navigate]);

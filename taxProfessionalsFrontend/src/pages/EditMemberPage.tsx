@@ -94,23 +94,14 @@ export default function EditMemberPage() {
 
     setLoading(true);
 
-    try {
-      console.log("EditMemberPage: Submitting update with data:", {
-        memberTpin: memberData.tpin,
-        ...formData,
-      });
-      
+    try {      
       const response = await updateCompanyMember({
         memberTpin: memberData.tpin || "",
         ...formData,
       });
-
-      console.log("EditMemberPage: Update response:", response);
-      console.log("EditMemberPage: Response data:", response.data);
       
       // Check if the backend actually succeeded
       if (response.data.success === false) {
-        console.error("EditMemberPage: Backend returned success=false:", response.data.message);
         showNotification(
           response.data.message || "Failed to update member",
           "error"
@@ -122,12 +113,10 @@ export default function EditMemberPage() {
       showNotification("Member updated successfully!", "success");
       
       // Navigate back to company dashboard after a short delay with refresh flag
-      console.log("EditMemberPage: Navigating to company dashboard with refresh flag");
       setTimeout(() => {
         navigate("/company-dashboard", { state: { refresh: true } });
       }, 1500);
     } catch (error: any) {
-      console.error("EditMemberPage: Error updating member:", error);
       showNotification(
         error.response?.data?.message || "Failed to update member",
         "error"

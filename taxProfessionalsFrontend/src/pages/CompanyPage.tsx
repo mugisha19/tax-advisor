@@ -43,16 +43,9 @@ const CompanyPage: React.FC = () => {
         tinCompany: tinCompany.trim() // Company TIN
       };
 
-      console.log('CompanyPage: Submitting company registration');
-      console.log('CompanyPage: User TIN:', userTin);
-      console.log('CompanyPage: Company TIN:', tinCompany.trim());
-      console.log('CompanyPage: Company data:', JSON.stringify(companyData, null, 2));
-
       // Call the API
       addCompany(companyData)
         .then((response) => {
-          console.log('CompanyPage: Company registration successful:', response);
-          console.log('CompanyPage: Response data:', response.data);
           
           // Check if response contains a token
           const token = response.data?.token 
@@ -64,7 +57,6 @@ const CompanyPage: React.FC = () => {
             // Store the token in localStorage
             const cleanToken = token.startsWith('Bearer ') ? token.substring(7) : token;
             localStorage.setItem('authToken', cleanToken);
-            console.log('CompanyPage: Token stored successfully');
           }
           
           setLoading(false);
@@ -72,9 +64,6 @@ const CompanyPage: React.FC = () => {
           navigate("/dashboard");
         })
         .catch((error) => {
-          console.error('CompanyPage: Company registration error:', error);
-          console.error('CompanyPage: Error response:', error.response);
-          console.error('CompanyPage: Error response data:', error.response?.data);
           
           setLoading(false);
           

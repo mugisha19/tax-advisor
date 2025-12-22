@@ -55,8 +55,6 @@ const AdminDashboard = () => {
 
     ListApplicants()
       .then((response) => {
-        console.log("Full API Response:", response);
-        console.log("Response data:", response.data);
 
         if (response.data.success && response.data.data) {
           setOfficers(response.data.data);
@@ -65,13 +63,10 @@ const AdminDashboard = () => {
         } else if (response.data.data) {
           setOfficers(response.data.data);
         } else {
-          console.error("Unexpected response format:", response.data);
           setError("Invalid response format");
         }
       })
       .catch((error) => {
-        console.error("Error fetching officers:", error);
-        console.error("Error response:", error.response);
 
         if (error.response?.status === 401 || error.response?.status === 403) {
           setError("Unauthorized. Please login again.");
@@ -156,8 +151,6 @@ const AdminDashboard = () => {
         updateFormData
       );
 
-      console.log("Update response:", response);
-
       if (response.data.success || response.status === 200) {
         setMessage("Officer updated successfully!");
         setTimeout(() => setMessage(""), 3000);
@@ -170,7 +163,6 @@ const AdminDashboard = () => {
         throw new Error(response.data.message || "Failed to update officer");
       }
     } catch (err) {
-      console.error("Error updating officer:", err);
       const errorMessage =
         err.response?.data?.message ||
         err.response?.data?.error ||
@@ -211,8 +203,6 @@ const AdminDashboard = () => {
       //   newPassword: passwordFormData.newPassword
       // });
 
-      console.log("Updating password for officer:", selectedOfficer.officerId);
-
       // Simulated success for now
       setMessage("Password updated successfully!");
       setTimeout(() => setMessage(""), 3000);
@@ -220,7 +210,6 @@ const AdminDashboard = () => {
       setSelectedOfficer(null);
       setPasswordFormData({ newPassword: "", confirmPassword: "" });
     } catch (err) {
-      console.error("Error updating password:", err);
       const errorMessage =
         err.response?.data?.message ||
         err.response?.data?.error ||
@@ -241,8 +230,6 @@ const AdminDashboard = () => {
     try {
       const response = await deleteOfficer(selectedOfficer.officerId);
 
-      console.log("Delete response:", response);
-
       if (
         response.data.success ||
         response.status === 200 ||
@@ -259,7 +246,6 @@ const AdminDashboard = () => {
         throw new Error(response.data.message || "Failed to delete officer");
       }
     } catch (err) {
-      console.error("Error deleting officer:", err);
       const errorMessage =
         err.response?.data?.message ||
         err.response?.data?.error ||

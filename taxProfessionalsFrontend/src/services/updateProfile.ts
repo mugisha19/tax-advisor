@@ -11,7 +11,6 @@ interface UpdateProfileData {
 }
 
 export const updateProfile = (data: UpdateProfileData) => {
-  console.log("UpdateProfile Service: Updating profile with data:", data);
 
   const token = localStorage.getItem("authToken");
 

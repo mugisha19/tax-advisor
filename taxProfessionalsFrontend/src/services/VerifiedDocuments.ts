@@ -8,11 +8,7 @@ export const getVerifiedDocuments = (tpin: string | number) => {
     // Get authentication token from localStorage
     const token = localStorage.getItem('authToken');
     
-    console.log('VerifiedDocuments Service: TIN:', tpinString);
-    console.log('VerifiedDocuments Service: Token exists:', !!token);
-    
     if (!token) {
-        console.error('VerifiedDocuments Service: No authentication token found in localStorage');
         return Promise.reject(new Error('Authentication token is missing. Please login again.'));
     }
     
@@ -23,8 +19,6 @@ export const getVerifiedDocuments = (tpin: string | number) => {
     
     // Add Authorization header with Bearer prefix
     headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-    
-    console.log('VerifiedDocuments Service: Request URL:', `${REST_API_BASE_URL}/${tpinString}/verified`);
     
     return axios.get(`${REST_API_BASE_URL}/${tpinString}/verified`, {
         headers: headers
