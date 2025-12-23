@@ -34,6 +34,18 @@ public class EmailController {
     @Value("${app.password.reset.token.expiry.hours:24}")
     private int resetTokenExpiryHours;
 
+    @PostMapping("/test")
+    public ResponseEntity<ApiResponse<String>> testEmail(@RequestBody String email) {
+        log.info("📧 Test email request for: {}", email);
+        try {
+            emailService.sendSimpleEmail(email, "Test Email", "This is a test email from Tax Professional Management System.");
+            return ResponseEntity.ok(ApiResponse.success("Test email sent successfully", "Email sent to " + email));
+        } catch (Exception e) {
+            log.error("❌ Failed to send test email: {}", e.getMessage());
+            return ResponseEntity.status(500).body(ApiResponse.error("Failed to send test email: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/send-password")
     public ResponseEntity<ApiResponse<String>> sendPasswordEmail(@Valid @RequestBody SendPasswordEmailRequest request) {
         log.info("📧 Received request to send password email to: {}", request.getEmail());

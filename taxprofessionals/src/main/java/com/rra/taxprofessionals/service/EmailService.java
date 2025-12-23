@@ -72,4 +72,6 @@ public interface EmailService {
      * @param resetToken Reset token for password reset
      */
     void sendApplicantPasswordResetEmail(String toEmail, String tpin, String fullName, String resetToken, String accountType);
+
+    void sendSimpleEmail(String toEmail, String subject, String body);
 }

@@ -865,6 +865,19 @@ public class EmailServiceImpl implements EmailService {
                 + "</html>";
     }
 
+    @Override
+    public void sendSimpleEmail(String toEmail, String subject, String body) {
+        log.info("📧 Sending simple email to: {}", toEmail);
+        try {
+            String htmlContent = "<!DOCTYPE html><html><body><p>" + body + "</p></body></html>";
+            sendEmail(toEmail, subject, htmlContent, null, null);
+            log.info("✅ Simple email sent successfully to: {}", toEmail);
+        } catch (MessagingException e) {
+            log.error("❌ Failed to send simple email: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to send simple email: " + e.getMessage(), e);
+        }
+    }
+
     /**
      * Format document type enum to human-readable string
      */

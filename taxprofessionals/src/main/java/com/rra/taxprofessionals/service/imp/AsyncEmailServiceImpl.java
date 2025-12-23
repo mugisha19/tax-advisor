@@ -162,4 +162,21 @@ public class AsyncEmailServiceImpl implements EmailService {
             throw e; // Rethrow to trigger retry
         }
     }
+
+    @Async
+    @Retryable(
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 2000, multiplier = 2)
+    )
+    @Override
+    public void sendSimpleEmail(String toEmail, String subject, String body) {
+        log.info("🔄 Async simple email sending started for: {}", toEmail);
+        try {
+            emailService.sendSimpleEmail(toEmail, subject, body);
+            log.info("✅ Async simple email completed for: {}", toEmail);
+        } catch (Exception e) {
+            log.error("❌ Async simple email failed for {}: {}", toEmail, e.getMessage());
+            throw e;
+        }
+    }
 }

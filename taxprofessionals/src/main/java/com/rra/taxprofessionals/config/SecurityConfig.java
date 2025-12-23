@@ -100,6 +100,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 // Public email endpoints (for registration welcome emails)
                 .requestMatchers(HttpMethod.POST, "/api/email/send-password").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/email/test").permitAll()
                 // Public location endpoints
                 .requestMatchers("/api/locations/**").permitAll()
                 // Public registration endpoints

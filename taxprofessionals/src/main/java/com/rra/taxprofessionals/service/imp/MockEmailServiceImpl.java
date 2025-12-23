@@ -248,4 +248,19 @@ public class MockEmailServiceImpl implements EmailService {
         System.out.println("Reset Link: " + resetLink);
         System.out.println("Set Password URL: POST /api/auth/set-password\n");
     }
+
+    @Override
+    public void sendSimpleEmail(String toEmail, String subject, String body) {
+        log.info("╔════════════════════════════════════════════════════════════════╗");
+        log.info("║            📧 MOCK SIMPLE EMAIL - NOT SENT                    ║");
+        log.info("╠════════════════════════════════════════════════════════════════╣");
+        log.info("║ To:      {}", toEmail);
+        log.info("║ Subject: {}", subject);
+        log.info("║ Body:    {}", body);
+        log.info("╚════════════════════════════════════════════════════════════════╝");
+        System.out.println("\n🎯 SIMPLE EMAIL (MOCK):");
+        System.out.println("To: " + toEmail);
+        System.out.println("Subject: " + subject);
+        System.out.println("Body: " + body + "\n");
+    }
 }
