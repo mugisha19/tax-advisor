@@ -27,17 +27,20 @@ public class ExternalSupplierServiceImpl implements ExternalSupplierService {
     @Value("${external.api.supplier-base-url}")
     private String supplierBaseUrl;
 
-    @Value("${external.api.refresh-token}")
-    private String initialRefreshToken;
-
-    @Value("${external.api.refresh-endpoint}")
-    private String refreshEndpoint;
+    @Value("${external.api.login-endpoint}")
+    private String loginEndpoint;
 
     @Value("${external.api.supplier-endpoint}")
     private String supplierEndpoint;
 
+    @Value("${external.api.login-username}")
+    private String loginUsername;
+
+    @Value("${external.api.login-password}")
+    private String loginPassword;
+
     private String cachedAccessToken;
-    private String cachedRefreshToken;  // Store current refresh token
+    private String cachedRefreshToken;
     private LocalDateTime tokenExpiryTime;
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -46,67 +49,54 @@ public class ExternalSupplierServiceImpl implements ExternalSupplierService {
      */
     @jakarta.annotation.PostConstruct
     private void init() {
-        cachedRefreshToken = initialRefreshToken;
-        log.info("🔑 External API Service initialized with refresh token");
+        log.info("🔑 External API Service initialized for login-based authentication");
+        cachedAccessToken = null;
+        cachedRefreshToken = null;
+        tokenExpiryTime = null;
     }
 
     @Override
     public ApiResponse<Object> authenticate() {
         try {
-            log.info("🔄 Refreshing access token with external API...");
-            
-            String refreshUrl = authBaseUrl + refreshEndpoint;
-            log.debug("Refresh URL: {}", refreshUrl);
-            log.debug("Using refresh token: {}...", cachedRefreshToken != null ? cachedRefreshToken.substring(0, 20) : "null");
+            log.info("🔑 Authenticating with external API login endpoint...");
+            String loginUrl = authBaseUrl + loginEndpoint;
+            log.debug("Login URL: {}", loginUrl);
+            log.debug("Using username: {}", loginUsername);
 
-            // Create headers with Bearer token
             HttpHeaders headers = new HttpHeaders();
             headers.set("Content-Type", "application/json");
-            headers.set("Authorization", "Bearer " + cachedRefreshToken);
-            
-            log.debug("Sending GET request with Authorization: Bearer {token}");
-            
-            // Create request entity (no body for GET)
-            HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+            headers.set("username", loginUsername);
+            headers.set("password", loginPassword);
 
-            // Make GET request to refresh token endpoint
+            HttpEntity<String> requestEntity = new HttpEntity<>("{}", headers);
+
             ResponseEntity<Map> response = restTemplate.exchange(
-                refreshUrl,
-                HttpMethod.GET,
+                loginUrl,
+                HttpMethod.POST,
                 requestEntity,
                 Map.class
             );
 
             Map<String, Object> responseBody = response.getBody();
-            
             if (responseBody != null && responseBody.get("MessageCode").equals(1)) {
                 Map<String, Object> responseObject = (Map<String, Object>) responseBody.get("ResponseObject");
-                
-                // Get new access token
                 cachedAccessToken = (String) responseObject.get("AccessToken");
-                
-                // Get and store new refresh token for future use
                 String newRefreshToken = (String) responseObject.get("RefreshToken");
                 if (newRefreshToken != null && !newRefreshToken.isEmpty()) {
                     cachedRefreshToken = newRefreshToken;
-                    log.info("🔑 Updated refresh token for future use");
+                    log.info("🔑 Updated refresh token from login");
                     log.debug("New refresh token: {}...", newRefreshToken.substring(0, 20));
                 }
-                
-                // Set token expiry (assume 24 hours, refresh at 23 hours)
                 tokenExpiryTime = LocalDateTime.now().plusHours(23);
-                
-                log.info("✅ Successfully refreshed access token");
+                log.info("✅ Successfully logged in and obtained access token");
                 log.debug("Access Token: {}...", cachedAccessToken != null ? cachedAccessToken.substring(0, 20) : "null");
-                
-                return ApiResponse.success("Successfully refreshed access token", responseBody);
+                return ApiResponse.success("Successfully logged in and obtained access token", responseBody);
             } else {
-                log.error("❌ Token refresh failed: {}", responseBody);
-                return ApiResponse.error("Failed to refresh access token");
+                log.error("❌ Login failed: {}", responseBody);
+                return ApiResponse.error("Failed to login and obtain access token");
             }
-
         } catch (Exception e) {
-            log.error("❌ Error refreshing access token: {}", e.getMessage(), e);
+            log.error("❌ Error logging in: {}", e.getMessage(), e);
             return ApiResponse.error("Error connecting to external API: " + e.getMessage());
         }
     }
@@ -118,7 +108,7 @@ public class ExternalSupplierServiceImpl implements ExternalSupplierService {
             
             // Check if we have a valid token
             if (cachedAccessToken == null || isTokenExpired()) {
-                log.info("🔄 No valid token, authenticating...");
+                log.info("🔄 No valid token, authenticating via login...");
                 ApiResponse<Object> authResponse = authenticate();
                 if (!authResponse.getSuccess()) {
                     return authResponse;
@@ -156,8 +146,7 @@ public class ExternalSupplierServiceImpl implements ExternalSupplierService {
             }
 
         } catch (org.springframework.web.client.HttpClientErrorException.Unauthorized e) {
-            log.warn("⚠️  Token expired or unauthorized, re-authenticating...");
-            // Clear cached token and retry
+            log.warn("⚠️  Token expired or unauthorized, re-authenticating via login...");
             cachedAccessToken = null;
             return getSupplierByTin(tin); // Retry once
             
