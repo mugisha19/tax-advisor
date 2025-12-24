@@ -76,6 +76,7 @@ copy nginx.conf deploy\tax-advisor\nginx\nginx.conf 2>nul
 REM Copy backup service files
 copy tax-advisor-backup.service deploy\tax-advisor\scripts\ 2>nul
 copy tax-advisor-backup.timer deploy\tax-advisor\scripts\ 2>nul
+copy backup-database.sh deploy\tax-advisor\scripts\ 2>nul
 
 REM Create backend systemd service
 echo [Unit]> deploy\tax-advisor\scripts\tax-advisor-backend.service
@@ -121,7 +122,7 @@ echo # Navigate to temp directory>> deploy\tax-advisor\scripts\deploy.sh
 echo cd "$TEMP_DIR" ^|^| { echo "Error: Must run from /tmp/tax-advisor"; exit 1; }>> deploy\tax-advisor\scripts\deploy.sh
 echo.>> deploy\tax-advisor\scripts\deploy.sh
 echo # Create directories>> deploy\tax-advisor\scripts\deploy.sh
-echo mkdir -p $DEPLOY_DIR/{backend,taxprofessional-frontend,officer-frontend,logs,uploads}>> deploy\tax-advisor\scripts\deploy.sh
+echo mkdir -p $DEPLOY_DIR/{backend,taxprofessional-frontend,officer-frontend,logs,uploads,scripts}>> deploy\tax-advisor\scripts\deploy.sh
 echo.>> deploy\tax-advisor\scripts\deploy.sh
 echo # Copy application files from temp to opt>> deploy\tax-advisor\scripts\deploy.sh
 echo cp -r backend/. $DEPLOY_DIR/backend/>> deploy\tax-advisor\scripts\deploy.sh
@@ -143,6 +144,10 @@ echo cp scripts/tax-advisor-backend.service /etc/systemd/system/>> deploy\tax-ad
 echo cp scripts/tax-advisor-officer-frontend.service /etc/systemd/system/>> deploy\tax-advisor\scripts\deploy.sh
 echo cp scripts/tax-advisor-backup.service /etc/systemd/system/ 2^>/dev/null ^|^| true>> deploy\tax-advisor\scripts\deploy.sh
 echo cp scripts/tax-advisor-backup.timer /etc/systemd/system/ 2^>/dev/null ^|^| true>> deploy\tax-advisor\scripts\deploy.sh
+echo.>> deploy\tax-advisor\scripts\deploy.sh
+echo # Copy backup script to /opt/tax-advisor/scripts>> deploy\tax-advisor\scripts\deploy.sh
+echo cp scripts/backup-database.sh $DEPLOY_DIR/scripts/ 2^>/dev/null ^|^| true>> deploy\tax-advisor\scripts\deploy.sh
+echo chmod +x $DEPLOY_DIR/scripts/backup-database.sh 2^>/dev/null ^|^| true>> deploy\tax-advisor\scripts\deploy.sh
 echo.>> deploy\tax-advisor\scripts\deploy.sh
 echo # Reload systemd>> deploy\tax-advisor\scripts\deploy.sh
 echo systemctl daemon-reload>> deploy\tax-advisor\scripts\deploy.sh
