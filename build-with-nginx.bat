@@ -181,7 +181,7 @@ echo Deployment package created in: deploy\tax-advisor\
 echo.
 echo To deploy on Red Hat server:
 echo 1. Copy deploy/tax-advisor to the server
-echo 2. Run: cd tax-advisor/scripts ^&^& chmod +x deploy.sh ^&^& sudo ./deploy.sh
+echo 2. Run: cd /tmp/tax-advisor/scripts ^&^& chmod +x deploy.sh ^&^& sed -i 's/\r$//' deploy.sh ^&^& sudo ./deploy.sh
 echo 3. Update /etc/nginx/nginx.conf with nginx/nginx.conf
 echo 4. Run: sudo nginx -t ^&^& sudo systemctl reload nginx
 echo.
