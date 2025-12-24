@@ -77,6 +77,7 @@ REM Copy backup service files
 copy tax-advisor-backup.service deploy\tax-advisor\scripts\ 2>nul
 copy tax-advisor-backup.timer deploy\tax-advisor\scripts\ 2>nul
 copy backup-database.sh deploy\tax-advisor\scripts\ 2>nul
+copy restore-database.sh deploy\tax-advisor\scripts\ 2>nul
 
 REM Create backend systemd service
 echo [Unit]> deploy\tax-advisor\scripts\tax-advisor-backend.service
@@ -116,6 +117,11 @@ REM Create deployment script
 echo #!/bin/bash> deploy\tax-advisor\scripts\deploy.sh
 echo DEPLOY_DIR="/opt/tax-advisor">> deploy\tax-advisor\scripts\deploy.sh
 echo TEMP_DIR="/tmp/tax-advisor">> deploy\tax-advisor\scripts\deploy.sh
+echo.>> deploy\tax-advisor\scripts\deploy.sh
+echo # Fix this script's line endings and permissions>> deploy\tax-advisor\scripts\deploy.sh
+echo sed -i 's/\r$//' "$0" 2^>/dev/null ^|^| true>> deploy\tax-advisor\scripts\deploy.sh
+echo chmod +x "$0" 2^>/dev/null ^|^| true>> deploy\tax-advisor\scripts\deploy.sh
+echo.>> deploy\tax-advisor\scripts\deploy.sh
 echo echo "=== Deploying Tax Advisor System ===">> deploy\tax-advisor\scripts\deploy.sh
 echo.>> deploy\tax-advisor\scripts\deploy.sh
 echo # Navigate to temp directory>> deploy\tax-advisor\scripts\deploy.sh
@@ -147,7 +153,11 @@ echo cp scripts/tax-advisor-backup.timer /etc/systemd/system/ 2^>/dev/null ^|^| 
 echo.>> deploy\tax-advisor\scripts\deploy.sh
 echo # Copy backup script to /opt/tax-advisor/scripts>> deploy\tax-advisor\scripts\deploy.sh
 echo cp scripts/backup-database.sh $DEPLOY_DIR/scripts/ 2^>/dev/null ^|^| true>> deploy\tax-advisor\scripts\deploy.sh
+echo cp scripts/restore-database.sh $DEPLOY_DIR/scripts/ 2^>/dev/null ^|^| true>> deploy\tax-advisor\scripts\deploy.sh
 echo chmod +x $DEPLOY_DIR/scripts/backup-database.sh 2^>/dev/null ^|^| true>> deploy\tax-advisor\scripts\deploy.sh
+echo chmod +x $DEPLOY_DIR/scripts/restore-database.sh 2^>/dev/null ^|^| true>> deploy\tax-advisor\scripts\deploy.sh
+echo sed -i 's/\r$//' $DEPLOY_DIR/scripts/backup-database.sh 2^>/dev/null ^|^| true>> deploy\tax-advisor\scripts\deploy.sh
+echo sed -i 's/\r$//' $DEPLOY_DIR/scripts/restore-database.sh 2^>/dev/null ^|^| true>> deploy\tax-advisor\scripts\deploy.sh
 echo.>> deploy\tax-advisor\scripts\deploy.sh
 echo # Reload systemd>> deploy\tax-advisor\scripts\deploy.sh
 echo systemctl daemon-reload>> deploy\tax-advisor\scripts\deploy.sh
