@@ -368,14 +368,14 @@ const OfficerDashboard = () => {
     setPendingRejectionTpin(null);
     setProblematicDocumentIds([]);
   };
-  const handleDownload = async (docId, fileName) => {
+  const handleDownload = async (docId) => {
     try {
       const res = await downloadDocument(docId);
       if (res.data && res.data instanceof Blob) {
         const url = window.URL.createObjectURL(res.data);
         const a = document.createElement("a");
         a.href = url;
-        a.download = fileName || `doc_${docId}`;
+        a.download = res.filename || `doc_${docId}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -1579,9 +1579,7 @@ const OfficerDashboard = () => {
                                 <div className="flex gap-2">
                                   <button
                                     className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1"
-                                    onClick={() =>
-                                      handleDownload(docId, doc.documentType)
-                                    }
+                                    onClick={() => handleDownload(docId)}
                                   >
                                     <Download className="w-3 h-3" />
                                     Download

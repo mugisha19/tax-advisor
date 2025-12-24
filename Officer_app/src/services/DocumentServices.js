@@ -37,8 +37,8 @@ export const getDocumentsByTpin = (tpin) => {
 // Using relative URL to go through Vite proxy (avoids CORS issues)
 export const downloadDocument = async (documentId) => {
   const token = localStorage.getItem("token");
-  // Use relative URL to leverage Vite proxy - this bypasses CORS
-  const url = `/api/documents/download/${documentId}`;
+  // Use full URL to go through nginx proxy
+  const url = `${import.meta.env.VITE_API_BASE_URL || 'http://10.0.0.65:8080'}/api/documents/download/${documentId}`;
 
   const response = await fetch(url, {
     method: "GET",
