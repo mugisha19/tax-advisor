@@ -466,19 +466,16 @@ const AdminDashboard = () => {
                     <th className="w-[10%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       S/N
                     </th>
-                    <th className="w-[12%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="w-[15%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Employee ID
                     </th>
-                    <th className="w-[20%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="w-[30%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Name
                     </th>
-                    <th className="w-[18%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Department
-                    </th>
-                    <th className="w-[15%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="w-[10%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Type
                     </th>
-                    <th className="w-[25%] px-4 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="w-[15%] px-4 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -513,17 +510,6 @@ const AdminDashboard = () => {
                             title={officer.names}
                           >
                             {officer.names}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-2">
-                          <Building className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                          <span
-                            className="text-gray-700 text-sm truncate"
-                            title={officer.department}
-                          >
-                            {officer.department}
                           </span>
                         </div>
                       </td>
