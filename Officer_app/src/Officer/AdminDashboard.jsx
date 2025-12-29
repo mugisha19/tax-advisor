@@ -464,7 +464,7 @@ const AdminDashboard = () => {
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="w-[10%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Officer ID
+                      S/N
                     </th>
                     <th className="w-[12%] px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Employee ID
@@ -484,7 +484,7 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {Officers.map((officer) => (
+                  {Officers.map((officer, idx) => (
                     <tr
                       key={officer.officerId}
                       className="hover:bg-gray-50 transition-colors"
@@ -493,7 +493,7 @@ const AdminDashboard = () => {
                         <div className="flex items-center gap-2">
                           <Shield className="w-4 h-4 text-blue-600 flex-shrink-0" />
                           <span className="font-semibold text-gray-900 text-sm truncate">
-                            {officer.officerId}
+                            {idx+1}
                           </span>
                         </div>
                       </td>

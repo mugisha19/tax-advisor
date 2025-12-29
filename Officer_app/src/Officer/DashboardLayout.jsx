@@ -112,7 +112,7 @@ const DashboardLayout = ({ children }) => {
         pending.sort((a, b) => new Date(b.applicationDate) - new Date(a.applicationDate));
 
         setDashboardData({
-          totalApplications: apps.length,
+          totalApplications: pending.length + approved.length + rejected.length,
           pendingApplications: pending.length,
           approvedApplications: approved.length,
           rejectedApplications: rejected.length,
@@ -233,7 +233,7 @@ const DashboardLayout = ({ children }) => {
                 <div className="space-y-8">
                   {/* Clickable Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatCard
+                    {/* <StatCard
                       icon={Users}
                       title="Total Applications"
                       value={dashboardData.totalApplications}
@@ -241,7 +241,7 @@ const DashboardLayout = ({ children }) => {
                       iconBg="bg-blue-500"
                       iconColor="text-white"
                       tab="ALL"
-                    />
+                    /> */}
                     <StatCard
                       icon={Clock}
                       title="Pending for Review"
@@ -325,7 +325,7 @@ const DashboardLayout = ({ children }) => {
                           {dashboardData.recentApplications.length > 0 ? (
                             dashboardData.recentApplications.map((app) => (
                               <tr key={app.tpin} className="hover:bg-gray-50 transition">
-                                <td className="px-6 py-4 text-sm font-medium text-gray-900">{app.tpin}</td>
+                                <td className="px-6 py-4 text-sm font-medium text-gray-900">{app.tpin.split('-')[0]}</td>
                                 <td className="px-6 py-4 text-sm text-gray-900">{app.fullName}</td>
                                 <td className="px-6 py-4 text-sm text-gray-600">{formatDate(app.applicationDate)}</td>
                                 <td className="px-6 py-4">
