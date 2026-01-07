@@ -4,6 +4,8 @@ import XIcon from "@mui/icons-material/X";
 import LanguageIcon from "@mui/icons-material/Language";
 import CallIcon from "@mui/icons-material/Call";
 
+const currentYear = new Date().getFullYear();
+
 const ApprovalCertificate = forwardRef(({ applicant }, ref) => {
   const formatDate = (dateString) => {
     if (!dateString) return "…………..";
@@ -175,7 +177,7 @@ const ApprovalCertificate = forwardRef(({ applicant }, ref) => {
                 color: "#000",
               }}
             >
-              Re: Your approval of Tax advisory license 2025
+              Re: Your approval of Tax advisory license {currentYear}
             </Typography>
           </Box>
 

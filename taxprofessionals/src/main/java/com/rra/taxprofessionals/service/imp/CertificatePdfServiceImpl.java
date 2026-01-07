@@ -87,9 +87,10 @@ public class CertificatePdfServiceImpl implements CertificatePdfService {
 
             // APPLICANT DETAILS
             addApplicantDetailsFormatted(doc, app);
+            int currentYear = LocalDateTime.now().getYear();
 
             // SUBJECT
-            doc.add(new Paragraph("Re: Your approval of Tax advisory license 2025")
+            doc.add(new Paragraph("Re: Your approval of Tax advisory license " + currentYear)
                     .setBold()
                     .setFontSize(11)
                     .setMarginTop(8)
@@ -165,9 +166,10 @@ public class CertificatePdfServiceImpl implements CertificatePdfService {
 
             // APPLICANT DETAILS
             addApplicantDetailsFormatted(doc, app);
+            int currentYear = LocalDateTime.now().getYear();
 
             // SUBJECT
-            doc.add(new Paragraph("Re: Notification for the Approval of tax advisory application license 2025")
+            doc.add(new Paragraph("Re: Notification for the Approval of tax advisory application license " + currentYear)
                     .setBold()
                     .setFontSize(11)
                     .setMarginTop(8)
@@ -181,7 +183,7 @@ public class CertificatePdfServiceImpl implements CertificatePdfService {
 
             String appDate = app.getApplicationDate() != null ? app.getApplicationDate().format(DATE_FORMAT) : "_______________";
             doc.add(bodyParagraph(
-                    "Following the application of the year 2025 for Tax Advisory License, submitted on "
+                    "Following the application of the year " + currentYear + " for Tax Advisory License, submitted on "
                     + appDate + ". The Tax Administration regrets to inform you that your application has been "
                     + "rejected. This decision was made because the application did not meet the published eligibility requirements."));
 

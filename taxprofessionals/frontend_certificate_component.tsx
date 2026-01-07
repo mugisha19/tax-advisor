@@ -3,6 +3,8 @@
 
 import React from 'react';
 
+const currentYear = new Date().getFullYear();
+
 interface CertificateProps {
   applicantName: string;
   tpin: string;
@@ -108,7 +110,7 @@ const TaxProfessionalCertificate: React.FC<CertificateProps> = ({
       {/* Approval Text */}
       <div style={{ marginBottom: '30px', textAlign: 'justify', lineHeight: '1.8', fontSize: '13px' }}>
         <p style={{ fontWeight: 'bold', marginBottom: '15px' }}>
-          Re: Your approval of Tax advisory license 2025
+          Re: Your approval of Tax advisory license {currentYear}
         </p>
         <p>
           Reference is made to the article 4 of the Directive of the Commissioner General No 
