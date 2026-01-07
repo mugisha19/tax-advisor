@@ -6,7 +6,7 @@
 # Configuration
 DB_NAME="tax_advisory"
 DB_USER="postgres"
-BACKUP_DIR="/opt/tax-advisor/backups"
+BACKUP_DIR="/var/tax-advisor-data/backups"
 RETENTION_DAYS=30
 
 # Create backup directory

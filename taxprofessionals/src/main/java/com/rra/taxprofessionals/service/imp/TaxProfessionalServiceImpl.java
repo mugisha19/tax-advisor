@@ -278,41 +278,13 @@ public class TaxProfessionalServiceImpl implements TaxProfessionalService {
             // Load file as Resource
             Path filePath = Paths.get(uploadDir).resolve(certificatePath).normalize();
 
-            // If file doesn't exist, try to regenerate it
+            // If file doesn't exist, return error - NO automatic backend regeneration
+            // Officer must regenerate from dashboard to ensure frontend design is used
             if (!Files.exists(filePath)) {
-                log.warn("⚠️ Certificate file does not exist at path: {}, attempting to regenerate...", filePath);
-
-                // Only regenerate for approved/rejected applications
-                if (taxProfessional.getStatus() == ApplicationStatus.APPROVED
-                        || taxProfessional.getStatus() == ApplicationStatus.REJECTED) {
-
-                    // Get the reviewing officer
-                    String reviewedByEmployeeId = taxProfessional.getReviewedBy();
-                    if (reviewedByEmployeeId == null) {
-                        throw new InvalidRequestException("Cannot regenerate certificate - no reviewing officer found");
-                    }
-
-                    Officer reviewer = officerRepository.findByEmployeeId(reviewedByEmployeeId)
-                            .orElseThrow(() -> new ResourceNotFoundException("Officer not found with employeeId: " + reviewedByEmployeeId));
-
-                    // Regenerate certificate
-                    byte[] pdfBytes;
-                    if (isApproval) {
-                        pdfBytes = certificatePdfService.generateApprovalCertificate(taxProfessional, reviewer);
-                    } else {
-                        String rejectionReason = taxProfessional.getRejectionReason() != null
-                                ? taxProfessional.getRejectionReason()
-                                : "Application did not meet requirements";
-                        pdfBytes = certificatePdfService.generateRejectionLetter(taxProfessional, reviewer, rejectionReason);
-                    }
-
-                    // Save regenerated certificate
-                    Files.createDirectories(filePath.getParent());
-                    Files.write(filePath, pdfBytes);
-                    log.info("✅ Certificate regenerated successfully at: {}", filePath);
-                } else {
-                    throw new ResourceNotFoundException("Certificate not found for TPIN: " + tpin);
-                }
+                log.error("❌ Certificate file is missing at path: {} for TPIN: {}", filePath, tpin);
+                throw new ResourceNotFoundException(
+                    "Certificate file is missing from server. Please ask an officer to regenerate the certificate again."
+                );
             }
 
             Resource resource = new UrlResource(filePath.toUri());
@@ -402,56 +374,13 @@ public class TaxProfessionalServiceImpl implements TaxProfessionalService {
             // Load file as Resource
             Path filePath = Paths.get(uploadDir).resolve(certificatePath).normalize();
 
-            // If file doesn't exist, try to regenerate it
+            // If file doesn't exist, return error - NO automatic backend regeneration
+            // Officer must regenerate from dashboard to ensure frontend design is used
             if (!Files.exists(filePath)) {
-                log.warn("⚠️ Certificate file does not exist at path: {}, attempting to regenerate...", filePath);
-
-                // Only regenerate for approved/rejected applications
-                if (taxProfessional.getStatus() == ApplicationStatus.APPROVED
-                        || taxProfessional.getStatus() == ApplicationStatus.REJECTED) {
-
-                    // Get the reviewing officer
-                    String reviewedByEmployeeId = taxProfessional.getReviewedBy();
-                    if (reviewedByEmployeeId == null) {
-                        log.error("❌ Cannot regenerate certificate - no reviewer information for TPIN: {}", tpin);
-                        throw new ResourceNotFoundException("Certificate cannot be regenerated. Please contact support.");
-                    }
-
-                    Officer officer = officerRepository.findByEmployeeId(reviewedByEmployeeId)
-                            .orElseThrow(() -> {
-                                log.error("❌ Reviewer officer not found: {}", reviewedByEmployeeId);
-                                return new ResourceNotFoundException("Certificate cannot be regenerated. Please contact support.");
-                            });
-
-                    try {
-                        // Generate the certificate/letter
-                        byte[] pdfDocument;
-                        if (isApproval) {
-                            log.info("📄 Regenerating approval certificate for TPIN: {}", tpin);
-                            pdfDocument = certificatePdfService.generateApprovalCertificate(taxProfessional, officer);
-                        } else {
-                            log.info("📄 Regenerating rejection letter for TPIN: {}", tpin);
-                            pdfDocument = certificatePdfService.generateRejectionLetter(
-                                    taxProfessional, officer, taxProfessional.getRejectionReason());
-                        }
-
-                        // Save the regenerated certificate (use company TIN for company members)
-                        String savedPath = saveCertificatePdf(pdfDocument, taxProfessional, isApproval);
-                        taxProfessional.setCertificateFilePath(savedPath);
-                        taxProfessionalRepository.save(taxProfessional);
-
-                        // Update the file path
-                        filePath = Paths.get(uploadDir).resolve(savedPath).normalize();
-                        log.info("✅ Certificate regenerated and saved successfully: {}", savedPath);
-
-                    } catch (Exception e) {
-                        log.error("❌ Failed to regenerate certificate for TPIN {}: {}", tpin, e.getMessage(), e);
-                        throw new FileStorageException("Failed to regenerate certificate. Please contact support.", e);
-                    }
-                } else {
-                    log.error("❌ Certificate file does not exist at path: {}", filePath);
-                    throw new ResourceNotFoundException("Certificate file not found on server. Please contact support.");
-                }
+                log.error("❌ Certificate file is missing at path: {} for TPIN: {}", filePath, tpin);
+                throw new ResourceNotFoundException(
+                    "Certificate file is missing from server. Please contact an officer to regenerate the certificate again."
+                );
             }
 
             Resource resource;
