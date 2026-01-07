@@ -31,6 +31,7 @@ const DocumentPage: React.FC = () => {
   const [taxClearanceCert, setTaxClearanceCert] = useState<File | null>(null);
   const [businessRegCert, setBusinessRegCert] = useState<File | null>(null);
   const [ebmCertificate, setEbmCertificate] = useState<File | null>(null);
+  const [incomeTaxDeclarations, setIncomeTaxDeclarations] = useState<File | null>(null);
 
   // Education and Qualification fields
   const [bachelorDegree, setBachelorDegree] = useState<BachelorDegree | null>(
@@ -245,6 +246,9 @@ const DocumentPage: React.FC = () => {
     if (!businessRegCert)
       formErrors.businessRegCert =
         "Business Registration Certificate is required";
+    if (!incomeTaxDeclarations)
+      formErrors.incomeTaxDeclarations =
+        "Two Years Income Tax Declarations is required";
 
     // Education and Qualification validation
     if (!bachelorDegree)
@@ -316,6 +320,7 @@ const DocumentPage: React.FC = () => {
         { file: cv!, documentType: "CV" },
         { file: taxClearanceCert!, documentType: "TAXCLEARANCECERTIFICATE" },
         { file: businessRegCert!, documentType: "BUSINESSREGISTRATIONCERT" },
+        { file: incomeTaxDeclarations!, documentType: "INCOMETAXDECLARATIONS" },
       ];
 
       // Add EBM Certificate if provided
@@ -916,6 +921,14 @@ const DocumentPage: React.FC = () => {
                 ebmCertificate,
                 (e) => handleFileChange(e, setEbmCertificate, "ebmCertificate"),
                 "ebmCertificate",
+                <MdCloudUpload className="text-blue-500 text-xl sm:text-2xl" />
+              )}
+
+              {renderFileField(
+                "Two Years Income Tax Declarations",
+                incomeTaxDeclarations,
+                (e) => handleFileChange(e, setIncomeTaxDeclarations, "incomeTaxDeclarations"),
+                "incomeTaxDeclarations",
                 <MdCloudUpload className="text-blue-500 text-xl sm:text-2xl" />
               )}
             </div>

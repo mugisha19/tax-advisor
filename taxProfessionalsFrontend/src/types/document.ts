@@ -10,6 +10,7 @@ export enum DocumentType {
   TAXCLEARANCECERTIFICATE = "TAXCLEARANCECERTIFICATE",
   BUSINESSREGISTRATIONCERT = "BUSINESSREGISTRATIONCERT",
   EBMCERTIFICATE = "EBMCERTIFICATE",
+  INCOMETAXDECLARATIONS = "INCOMETAXDECLARATIONS",
 }
 
 export interface Document {
@@ -45,4 +46,5 @@ export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
   [DocumentType.TAXCLEARANCECERTIFICATE]: "Tax Clearance Certificate",
   [DocumentType.BUSINESSREGISTRATIONCERT]: "Business Registration Certificate",
   [DocumentType.EBMCERTIFICATE]: "EBM Certificate",
+  [DocumentType.INCOMETAXDECLARATIONS]: "Two Years Income Tax Declarations",
 };

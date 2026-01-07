@@ -72,6 +72,7 @@ const formatDocumentType = (docType) => {
     NONREFUNDFEES: "Proof payment",
     TAXCLEARANCECERTIFICATE: "Tax Clearance Certificate",
     BUSINESSREGISTRATIONCERT: "BUSINESS REGISTRATION CERTIFICATE",
+    INCOMETAXDECLARATIONS: "Two Years Income Tax Declarations",
   };
 
   return nameMap[docType] || docType;

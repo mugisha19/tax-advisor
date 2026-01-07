@@ -185,7 +185,7 @@ const RejectionCertificate = forwardRef(({ applicant }, ref) => {
                 mb: 2,
               }}
             >
-              Re: Rejection of Tax advisory license application {currentYear}
+              Re: Rejection of Tax advisory license application
             </Typography>
           </Box>
 

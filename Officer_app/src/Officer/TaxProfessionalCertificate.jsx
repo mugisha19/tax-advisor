@@ -208,7 +208,7 @@ const TaxProfessionalCertificate = forwardRef(({ applicant }, ref) => {
                 mb: 2,
               }}
             >
-              Re: Your approval of Tax advisory license {currentYear}
+              Re: Your approval of Tax advisory license
             </Typography>
           </Box>
 
@@ -253,7 +253,7 @@ const TaxProfessionalCertificate = forwardRef(({ applicant }, ref) => {
               }}
             >
               This license is valid for period of three (3) years until{" "}
-              {expiryDate ? formatDateLong(expiryDate.toISOString()) : "……………"}.
+              {expiryDate ? expiryDate.getFullYear() : "……………"}.
             </Typography>
           </Box>
 

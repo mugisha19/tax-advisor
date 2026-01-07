@@ -90,7 +90,7 @@ public class CertificatePdfServiceImpl implements CertificatePdfService {
             int currentYear = LocalDateTime.now().getYear();
 
             // SUBJECT
-            doc.add(new Paragraph("Re: Your approval of Tax advisory license " + currentYear)
+            doc.add(new Paragraph("Re: Your approval of Tax advisory license")
                     .setBold()
                     .setFontSize(11)
                     .setMarginTop(8)
@@ -106,12 +106,12 @@ public class CertificatePdfServiceImpl implements CertificatePdfService {
                     "Following the review of your submitted application and accompanying documents, "
                     + "the Rwanda Revenue Authority has approved your license."));
 
-            // VALIDITY with bold styling
-            String expiry = app.getExpiryDate() != null ? app.getExpiryDate().format(DATE_FORMAT)
-                    : LocalDateTime.now().plusYears(3).format(DATE_FORMAT);
+            // VALIDITY with bold styling - Show only year
+            String expiryYear = app.getExpiryDate() != null ? String.valueOf(app.getExpiryDate().getYear())
+                    : String.valueOf(LocalDateTime.now().plusYears(3).getYear());
 
             doc.add(new Paragraph("This license is valid for period of three (3) years until "
-                    + expiry + ".")
+                    + expiryYear + ".")
                     .setFontSize(10)
                     .setBold()
                     .setFontColor(RRA_RED)
@@ -169,7 +169,7 @@ public class CertificatePdfServiceImpl implements CertificatePdfService {
             int currentYear = LocalDateTime.now().getYear();
 
             // SUBJECT
-            doc.add(new Paragraph("Re: Notification for the Approval of tax advisory application license " + currentYear)
+            doc.add(new Paragraph("Re: Notification for the Approval of tax advisory application license")
                     .setBold()
                     .setFontSize(11)
                     .setMarginTop(8)
