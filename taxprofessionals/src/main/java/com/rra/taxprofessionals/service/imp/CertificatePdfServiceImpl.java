@@ -109,8 +109,8 @@ public class CertificatePdfServiceImpl implements CertificatePdfService {
             String expiry = app.getExpiryDate() != null ? app.getExpiryDate().format(DATE_FORMAT)
                     : LocalDateTime.now().plusYears(3).format(DATE_FORMAT);
 
-            doc.add(new Paragraph("This license is valid for period of three (3) years starting from "
-                    + date + " To " + expiry + ".")
+            doc.add(new Paragraph("This license is valid for period of three (3) years until "
+                    + expiry + ".")
                     .setFontSize(10)
                     .setBold()
                     .setFontColor(RRA_RED)

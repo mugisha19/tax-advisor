@@ -250,8 +250,7 @@ const TaxProfessionalCertificate = forwardRef(({ applicant }, ref) => {
                 lineHeight: 1.6,
               }}
             >
-              This license is valid for period of three (3) years starting from{" "}
-              {formatDateLong(approvalDate)} to{" "}
+              This license is valid for period of three (3) years until{" "}
               {expiryDate ? formatDateLong(expiryDate.toISOString()) : "……………"}.
             </Typography>
           </Box>

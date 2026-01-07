@@ -17,6 +17,7 @@ const RejectionCertificate = forwardRef(({ applicant }, ref) => {
   };
 
   const rejectionDate = applicant?.reviewedAt || new Date().toISOString();
+  const currentYear = new Date().getFullYear();
 
   return (
     <Card
@@ -184,7 +185,7 @@ const RejectionCertificate = forwardRef(({ applicant }, ref) => {
                 mb: 2,
               }}
             >
-              Re: Rejection of Tax advisory license application 2025
+              Re: Rejection of Tax advisory license application {currentYear}
             </Typography>
           </Box>
 
