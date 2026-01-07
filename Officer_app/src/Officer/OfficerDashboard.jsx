@@ -1627,22 +1627,24 @@ const OfficerDashboard = () => {
                   <div className="bg-gray-50 border-t border-gray-200 px-8 py-6">
                     <div className="flex items-center justify-end gap-3">
                       <button
-                        className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl font-semibold transition-all shadow-sm hover:shadow-md flex items-center gap-2"
+                        className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl font-semibold transition-all shadow-sm hover:shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={() =>
                           handleReview(selectedApplicant.tpin, "REJECTED")
                         }
+                        disabled={loading}
                       >
                         <XCircle className="w-5 h-5" />
-                        Reject Application
+                        {loading ? "Processing..." : "Reject Application"}
                       </button>
                       <button
-                        className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-semibold transition-all shadow-sm hover:shadow-md flex items-center gap-2"
+                        className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-semibold transition-all shadow-sm hover:shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={() =>
                           handleReview(selectedApplicant.tpin, "APPROVED")
                         }
+                        disabled={loading}
                       >
                         <CheckCircle className="w-5 h-5" />
-                        Approve Application
+                        {loading ? "Processing..." : "Approve Application"}
                       </button>
                     </div>
                   </div>
