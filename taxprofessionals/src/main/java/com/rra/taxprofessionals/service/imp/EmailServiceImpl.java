@@ -162,7 +162,9 @@ public class EmailServiceImpl implements EmailService {
             log.error("Stack trace:", e);
             
             // Try SMS fallback for officer
-            trySmsForOfficer(employeeId, "You have been invited to RRA Tax Professionals Platform. Your invitation link: " + officerFrontendUrl + "/reset-password?token=" + invitationToken + "&type=officer");
+            String encodedToken = URLEncoder.encode(invitationToken, StandardCharsets.UTF_8);
+            String smsLink = officerFrontendUrl + "/reset-password?token=" + encodedToken + "&type=officer";
+            trySmsForOfficer(employeeId, "[RRA Tax Professional Portal] You have been invited as an Officer. Employee ID: " + employeeId + ". Set your password: " + smsLink);
             
             throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
         } catch (Exception e) {
@@ -170,7 +172,9 @@ public class EmailServiceImpl implements EmailService {
             log.error("Stack trace:", e);
             
             // Try SMS fallback for officer
-            trySmsForOfficer(employeeId, "You have been invited to RRA Tax Professionals Platform. Your invitation link: " + officerFrontendUrl + "/reset-password?token=" + invitationToken + "&type=officer");
+            String encodedToken = URLEncoder.encode(invitationToken, StandardCharsets.UTF_8);
+            String smsLink = officerFrontendUrl + "/reset-password?token=" + encodedToken + "&type=officer";
+            trySmsForOfficer(employeeId, "[RRA Tax Professional Portal] You have been invited as an Officer. Employee ID: " + employeeId + ". Set your password: " + smsLink);
             
             throw new RuntimeException("Unexpected error sending email: " + e.getMessage(), e);
         }
@@ -198,8 +202,8 @@ public class EmailServiceImpl implements EmailService {
             
             // Try SMS fallback for officer
             String smsMessage = resetLink != null 
-                ? "Password reset request for RRA Tax Professionals Platform. Reset link: " + resetLink
-                : "Password reset request for RRA Tax Professionals Platform. Please contact admin for reset link.";
+                ? "[RRA Tax Professional Portal] Password reset requested for Officer. Employee ID: " + employeeId + ". Reset link: " + resetLink
+                : "[RRA Tax Professional Portal] Password reset requested. Employee ID: " + employeeId + ". Please contact admin for reset link.";
             trySmsForOfficer(employeeId, smsMessage);
             
             throw new RuntimeException("Failed to send password reset email: " + e.getMessage(), e);
@@ -209,8 +213,8 @@ public class EmailServiceImpl implements EmailService {
             
             // Try SMS fallback for officer
             String smsMessage = resetLink != null 
-                ? "Password reset request for RRA Tax Professionals Platform. Reset link: " + resetLink
-                : "Password reset request for RRA Tax Professionals Platform. Please contact admin for reset link.";
+                ? "[RRA Tax Professional Portal] Password reset requested for Officer. Employee ID: " + employeeId + ". Reset link: " + resetLink
+                : "[RRA Tax Professional Portal] Password reset requested. Employee ID: " + employeeId + ". Please contact admin for reset link.";
             trySmsForOfficer(employeeId, smsMessage);
             
             throw new RuntimeException("Unexpected error sending password reset email: " + e.getMessage(), e);
@@ -251,8 +255,8 @@ public class EmailServiceImpl implements EmailService {
             
             // Try SMS fallback for tax professional
             String smsMessage = status == ApplicationStatus.APPROVED 
-                ? "Congratulations " + applicantName + "! Your application for Tax Professional License has been APPROVED. Check your portal for details."
-                : "Dear " + applicantName + ", Your application requires attention. Please check your portal for details. TPIN: " + tpin;
+                ? "[RRA Tax Professional Portal] Congratulations " + applicantName + "! Your Tax Professional License application has been APPROVED. Login to view your certificate. TPIN: " + tpin
+                : "[RRA Tax Professional Portal] Dear " + applicantName + ", Your application requires attention. Please login to your portal for details. TPIN: " + tpin;
             trySmsForTaxProfessional(tpin, smsMessage);
             
             throw new RuntimeException("Failed to send decision email: " + e.getMessage(), e);
@@ -262,8 +266,8 @@ public class EmailServiceImpl implements EmailService {
             
             // Try SMS fallback for tax professional
             String smsMessage = status == ApplicationStatus.APPROVED 
-                ? "Congratulations " + applicantName + "! Your application for Tax Professional License has been APPROVED. Check your portal for details."
-                : "Dear " + applicantName + ", Your application requires attention. Please check your portal for details. TPIN: " + tpin;
+                ? "[RRA Tax Professional Portal] Congratulations " + applicantName + "! Your Tax Professional License application has been APPROVED. Login to view your certificate. TPIN: " + tpin
+                : "[RRA Tax Professional Portal] Dear " + applicantName + ", Your application requires attention. Please login to your portal for details. TPIN: " + tpin;
             trySmsForTaxProfessional(tpin, smsMessage);
             
             throw new RuntimeException("Unexpected error sending decision email: " + e.getMessage(), e);
@@ -319,7 +323,7 @@ public class EmailServiceImpl implements EmailService {
             // Try SMS fallback - find tax professional by email
             TaxProfessional taxPro = taxProfessionalRepository.findByEmail(toEmail).orElse(null);
             if (taxPro != null) {
-                String smsMessage = "Congratulations " + applicantName + "! Your Tax Advisory License has been APPROVED. Your certificate is ready. Login to your portal to download it.";
+                String smsMessage = "[RRA Tax Professional Portal] Congratulations " + applicantName + "! Your Tax Advisory License has been APPROVED. Certificate ready. Login: " + taxProfessionalFrontendUrl + " TPIN: " + taxPro.getTpin();
                 trySmsForTaxProfessional(taxPro.getTpin(), smsMessage);
             }
             
@@ -330,7 +334,7 @@ public class EmailServiceImpl implements EmailService {
             // Try SMS fallback - find tax professional by email
             TaxProfessional taxPro = taxProfessionalRepository.findByEmail(toEmail).orElse(null);
             if (taxPro != null) {
-                String smsMessage = "Congratulations " + applicantName + "! Your Tax Advisory License has been APPROVED. Your certificate is ready. Login to your portal to download it.";
+                String smsMessage = "[RRA Tax Professional Portal] Congratulations " + applicantName + "! Your Tax Advisory License has been APPROVED. Certificate ready. Login: " + taxProfessionalFrontendUrl + " TPIN: " + taxPro.getTpin();
                 trySmsForTaxProfessional(taxPro.getTpin(), smsMessage);
             }
             
@@ -366,7 +370,7 @@ public class EmailServiceImpl implements EmailService {
             log.error("❌ MessagingException while sending rejection email: {}", e.getMessage(), e);
             
             // Try SMS fallback
-            String smsMessage = "Dear " + applicantName + ", Your application requires attention. Please check your portal for details. TPIN: " + tpin;
+            String smsMessage = "[RRA Tax Professional Portal] Dear " + applicantName + ", Your application requires attention. Please login for details: " + taxProfessionalFrontendUrl + " TPIN: " + tpin;
             trySmsForTaxProfessional(tpin, smsMessage);
             
             throw new RuntimeException("Failed to send rejection email: " + e.getMessage(), e);
@@ -374,7 +378,7 @@ public class EmailServiceImpl implements EmailService {
             log.error("❌ Unexpected error while sending rejection email: {}", e.getMessage(), e);
             
             // Try SMS fallback
-            String smsMessage = "Dear " + applicantName + ", Your application requires attention. Please check your portal for details. TPIN: " + tpin;
+            String smsMessage = "[RRA Tax Professional Portal] Dear " + applicantName + ", Your application requires attention. Please login for details: " + taxProfessionalFrontendUrl + " TPIN: " + tpin;
             trySmsForTaxProfessional(tpin, smsMessage);
             
             throw new RuntimeException("Unexpected error sending rejection email: " + e.getMessage(), e);
@@ -411,7 +415,7 @@ public class EmailServiceImpl implements EmailService {
             // Try SMS fallback - find tax professional by email
             TaxProfessional taxPro = taxProfessionalRepository.findByEmail(toEmail).orElse(null);
             if (taxPro != null) {
-                String smsMessage = "Welcome " + fullName + "! Your RRA Tax Professional Portal account is ready. Login with email: " + toEmail + ". Please check your portal for password details.";
+                String smsMessage = "[RRA Tax Professional Portal] Welcome " + fullName + "! Your account is ready. Login: " + taxProfessionalFrontendUrl + " Email: " + toEmail + ". Check portal for password.";
                 trySmsForTaxProfessional(taxPro.getTpin(), smsMessage);
             }
             
@@ -423,7 +427,7 @@ public class EmailServiceImpl implements EmailService {
             // Try SMS fallback - find tax professional by email
             TaxProfessional taxPro = taxProfessionalRepository.findByEmail(toEmail).orElse(null);
             if (taxPro != null) {
-                String smsMessage = "Welcome " + fullName + "! Your RRA Tax Professional Portal account is ready. Login with email: " + toEmail + ". Please check your portal for password details.";
+                String smsMessage = "[RRA Tax Professional Portal] Welcome " + fullName + "! Your account is ready. Login: " + taxProfessionalFrontendUrl + " Email: " + toEmail + ". Check portal for password.";
                 trySmsForTaxProfessional(taxPro.getTpin(), smsMessage);
             }
             
@@ -735,8 +739,11 @@ public class EmailServiceImpl implements EmailService {
             log.error("❌ MessagingException while sending applicant password reset email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
             
-            // Try SMS fallback
-            String smsMessage = "Password reset request for RRA Tax Professional Portal. TPIN: " + tpin + ". Please login to your portal to reset password or contact support.";
+            // Try SMS fallback with reset link
+            String encodedToken = URLEncoder.encode(resetToken, StandardCharsets.UTF_8);
+            String userType = "COMPANY".equalsIgnoreCase(accountType) ? "company" : "taxprofessional";
+            String resetLink = taxProfessionalFrontendUrl + "/reset-password?token=" + encodedToken + "&type=" + userType;
+            String smsMessage = "[RRA Tax Professional Portal] Password reset requested. TPIN: " + tpin + ". Reset link: " + resetLink;
             trySmsForTaxProfessional(tpin, smsMessage);
             
             throw new RuntimeException("Failed to send applicant password reset email: " + e.getMessage(), e);
@@ -744,8 +751,11 @@ public class EmailServiceImpl implements EmailService {
             log.error("❌ Unexpected error while sending applicant password reset email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
             
-            // Try SMS fallback
-            String smsMessage = "Password reset request for RRA Tax Professional Portal. TPIN: " + tpin + ". Please login to your portal to reset password or contact support.";
+            // Try SMS fallback with reset link
+            String encodedToken = URLEncoder.encode(resetToken, StandardCharsets.UTF_8);
+            String userType = "COMPANY".equalsIgnoreCase(accountType) ? "company" : "taxprofessional";
+            String resetLink = taxProfessionalFrontendUrl + "/reset-password?token=" + encodedToken + "&type=" + userType;
+            String smsMessage = "[RRA Tax Professional Portal] Password reset requested. TPIN: " + tpin + ". Reset link: " + resetLink;
             trySmsForTaxProfessional(tpin, smsMessage);
             
             throw new RuntimeException("Unexpected error sending applicant password reset email: " + e.getMessage(), e);
@@ -1004,7 +1014,8 @@ public class EmailServiceImpl implements EmailService {
             Officer officer = officerRepository.findByEmail(toEmail).orElse(null);
             if (officer != null && officer.getPhoneNumber() != null) {
                 try {
-                    smsService.sendSms(officer.getPhoneNumber(), body);
+                    String smsMessage = "[RRA Tax Professional Portal] " + body;
+                    smsService.sendSms(officer.getPhoneNumber(), smsMessage);
                     log.info("✅ SMS sent as fallback to officer: {}", officer.getEmployeeId());
                 } catch (Exception smsEx) {
                     log.error("❌ SMS fallback also failed: {}", smsEx.getMessage());
@@ -1014,7 +1025,8 @@ public class EmailServiceImpl implements EmailService {
                 TaxProfessional taxPro = taxProfessionalRepository.findByEmail(toEmail).orElse(null);
                 if (taxPro != null && taxPro.getPhoneNumber() != null) {
                     try {
-                        smsService.sendSms(taxPro.getPhoneNumber(), body);
+                        String smsMessage = "[RRA Tax Professional Portal] " + body;
+                        smsService.sendSms(taxPro.getPhoneNumber(), smsMessage);
                         log.info("✅ SMS sent as fallback to tax professional: {}", taxPro.getTpin());
                     } catch (Exception smsEx) {
                         log.error("❌ SMS fallback also failed: {}", smsEx.getMessage());
@@ -1034,7 +1046,8 @@ public class EmailServiceImpl implements EmailService {
             Officer officer = officerRepository.findByEmail(toEmail).orElse(null);
             if (officer != null && officer.getPhoneNumber() != null) {
                 try {
-                    smsService.sendSms(officer.getPhoneNumber(), body);
+                    String smsMessage = "[RRA Tax Professional Portal] " + body;
+                    smsService.sendSms(officer.getPhoneNumber(), smsMessage);
                     log.info("✅ SMS sent as fallback to officer: {}", officer.getEmployeeId());
                 } catch (Exception smsEx) {
                     log.error("❌ SMS fallback also failed: {}", smsEx.getMessage());
@@ -1043,7 +1056,8 @@ public class EmailServiceImpl implements EmailService {
                 TaxProfessional taxPro = taxProfessionalRepository.findByEmail(toEmail).orElse(null);
                 if (taxPro != null && taxPro.getPhoneNumber() != null) {
                     try {
-                        smsService.sendSms(taxPro.getPhoneNumber(), body);
+                        String smsMessage = "[RRA Tax Professional Portal] " + body;
+                        smsService.sendSms(taxPro.getPhoneNumber(), smsMessage);
                         log.info("✅ SMS sent as fallback to tax professional: {}", taxPro.getTpin());
                     } catch (Exception smsEx) {
                         log.error("❌ SMS fallback also failed: {}", smsEx.getMessage());

@@ -137,7 +137,7 @@ const Login = () => {
 
       if (response.data.success) {
         setResetSuccess(
-          "Password reset link has been sent to your email. Please check your inbox."
+          "Password reset link has been sent to your email or SMS. Please check your inbox or phone."
         );
         setResetEmail("");
         // Auto close after 5 seconds

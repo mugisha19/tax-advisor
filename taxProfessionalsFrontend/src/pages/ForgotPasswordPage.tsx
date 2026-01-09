@@ -56,7 +56,7 @@ const ForgotPasswordPage: React.FC = () => {
         {!success ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <p className="text-gray-600 text-sm sm:text-base text-center">
-              Enter your TIN number and we'll send a password reset link to your registered email.
+              Enter your TIN number and we'll send a password reset link to your registered email or SMS.
             </p>
 
             <div className="relative">
@@ -103,10 +103,10 @@ const ForgotPasswordPage: React.FC = () => {
           <div className="space-y-4">
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <p className="text-green-800 text-sm sm:text-base text-center">
-                ✓ Password reset link has been sent to your registered email
+                ✓ Password reset link has been sent to your registered email or SMS
               </p>
               <p className="text-green-700 text-xs sm:text-sm text-center mt-2">
-                Please check your inbox and follow the instructions to reset your password.
+                Please check your inbox or phone messages and follow the instructions to reset your password.
               </p>
             </div>
 
@@ -126,7 +126,7 @@ const ForgotPasswordPage: React.FC = () => {
                 }}
                 className="text-blue-400 hover:text-blue-600 text-sm underline transition duration-200"
               >
-                Didn't receive the email? Try again
+                Didn't receive the message? Try again
               </button>
             </div>
           </div>

@@ -97,7 +97,7 @@ const ResetPasswordPage: React.FC = () => {
         {!success ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <p className="text-gray-600 text-sm sm:text-base text-center">
-              Enter your new password below.
+              Enter your new password below. (Reset link sent via email or SMS)
             </p>
 
             <div className="relative">
