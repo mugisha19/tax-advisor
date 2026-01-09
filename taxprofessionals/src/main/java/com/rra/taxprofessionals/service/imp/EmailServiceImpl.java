@@ -315,9 +315,25 @@ public class EmailServiceImpl implements EmailService {
 
         } catch (MessagingException e) {
             log.error("❌ MessagingException while sending approval email: {}", e.getMessage(), e);
+            
+            // Try SMS fallback - find tax professional by email
+            TaxProfessional taxPro = taxProfessionalRepository.findByEmail(toEmail).orElse(null);
+            if (taxPro != null) {
+                String smsMessage = "Congratulations " + applicantName + "! Your Tax Advisory License has been APPROVED. Your certificate is ready. Login to your portal to download it.";
+                trySmsForTaxProfessional(taxPro.getTpin(), smsMessage);
+            }
+            
             throw new RuntimeException("Failed to send approval email: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("❌ Unexpected error while sending approval email: {}", e.getMessage(), e);
+            
+            // Try SMS fallback - find tax professional by email
+            TaxProfessional taxPro = taxProfessionalRepository.findByEmail(toEmail).orElse(null);
+            if (taxPro != null) {
+                String smsMessage = "Congratulations " + applicantName + "! Your Tax Advisory License has been APPROVED. Your certificate is ready. Login to your portal to download it.";
+                trySmsForTaxProfessional(taxPro.getTpin(), smsMessage);
+            }
+            
             throw new RuntimeException("Unexpected error sending approval email: " + e.getMessage(), e);
         }
     }
@@ -348,9 +364,19 @@ public class EmailServiceImpl implements EmailService {
 
         } catch (MessagingException e) {
             log.error("❌ MessagingException while sending rejection email: {}", e.getMessage(), e);
+            
+            // Try SMS fallback
+            String smsMessage = "Dear " + applicantName + ", Your application requires attention. Please check your portal for details. TPIN: " + tpin;
+            trySmsForTaxProfessional(tpin, smsMessage);
+            
             throw new RuntimeException("Failed to send rejection email: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("❌ Unexpected error while sending rejection email: {}", e.getMessage(), e);
+            
+            // Try SMS fallback
+            String smsMessage = "Dear " + applicantName + ", Your application requires attention. Please check your portal for details. TPIN: " + tpin;
+            trySmsForTaxProfessional(tpin, smsMessage);
+            
             throw new RuntimeException("Unexpected error sending rejection email: " + e.getMessage(), e);
         }
     }
@@ -381,10 +407,26 @@ public class EmailServiceImpl implements EmailService {
         } catch (MessagingException e) {
             log.error("❌ MessagingException while sending welcome email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
+            
+            // Try SMS fallback - find tax professional by email
+            TaxProfessional taxPro = taxProfessionalRepository.findByEmail(toEmail).orElse(null);
+            if (taxPro != null) {
+                String smsMessage = "Welcome " + fullName + "! Your RRA Tax Professional Portal account is ready. Login with email: " + toEmail + ". Please check your portal for password details.";
+                trySmsForTaxProfessional(taxPro.getTpin(), smsMessage);
+            }
+            
             throw new RuntimeException("Failed to send welcome email: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("❌ Unexpected error while sending welcome email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
+            
+            // Try SMS fallback - find tax professional by email
+            TaxProfessional taxPro = taxProfessionalRepository.findByEmail(toEmail).orElse(null);
+            if (taxPro != null) {
+                String smsMessage = "Welcome " + fullName + "! Your RRA Tax Professional Portal account is ready. Login with email: " + toEmail + ". Please check your portal for password details.";
+                trySmsForTaxProfessional(taxPro.getTpin(), smsMessage);
+            }
+            
             throw new RuntimeException("Unexpected error sending welcome email: " + e.getMessage(), e);
         }
     }
@@ -692,10 +734,20 @@ public class EmailServiceImpl implements EmailService {
         } catch (MessagingException e) {
             log.error("❌ MessagingException while sending applicant password reset email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
+            
+            // Try SMS fallback
+            String smsMessage = "Password reset request for RRA Tax Professional Portal. TPIN: " + tpin + ". Please login to your portal to reset password or contact support.";
+            trySmsForTaxProfessional(tpin, smsMessage);
+            
             throw new RuntimeException("Failed to send applicant password reset email: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("❌ Unexpected error while sending applicant password reset email to {}: {}", toEmail, e.getMessage());
             log.error("Stack trace:", e);
+            
+            // Try SMS fallback
+            String smsMessage = "Password reset request for RRA Tax Professional Portal. TPIN: " + tpin + ". Please login to your portal to reset password or contact support.";
+            trySmsForTaxProfessional(tpin, smsMessage);
+            
             throw new RuntimeException("Unexpected error sending applicant password reset email: " + e.getMessage(), e);
         }
     }
@@ -944,7 +996,64 @@ public class EmailServiceImpl implements EmailService {
             log.info("✅ Simple email sent successfully to: {}", toEmail);
         } catch (MessagingException e) {
             log.error("❌ Failed to send simple email: {}", e.getMessage(), e);
+            
+            // Try SMS fallback - try to find recipient and send SMS
+            log.info("🔄 Attempting SMS fallback for simple email to: {}", toEmail);
+            
+            // Try to find officer by email
+            Officer officer = officerRepository.findByEmail(toEmail).orElse(null);
+            if (officer != null && officer.getPhoneNumber() != null) {
+                try {
+                    smsService.sendSms(officer.getPhoneNumber(), body);
+                    log.info("✅ SMS sent as fallback to officer: {}", officer.getEmployeeId());
+                } catch (Exception smsEx) {
+                    log.error("❌ SMS fallback also failed: {}", smsEx.getMessage());
+                }
+            } else {
+                // Try to find tax professional by email
+                TaxProfessional taxPro = taxProfessionalRepository.findByEmail(toEmail).orElse(null);
+                if (taxPro != null && taxPro.getPhoneNumber() != null) {
+                    try {
+                        smsService.sendSms(taxPro.getPhoneNumber(), body);
+                        log.info("✅ SMS sent as fallback to tax professional: {}", taxPro.getTpin());
+                    } catch (Exception smsEx) {
+                        log.error("❌ SMS fallback also failed: {}", smsEx.getMessage());
+                    }
+                } else {
+                    log.warn("⚠️ No phone number found for: {}", toEmail);
+                }
+            }
+            
             throw new RuntimeException("Failed to send simple email: " + e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("❌ Unexpected error sending simple email: {}", e.getMessage(), e);
+            
+            // Try SMS fallback for non-MessagingException errors too
+            log.info("🔄 Attempting SMS fallback for simple email to: {}", toEmail);
+            
+            Officer officer = officerRepository.findByEmail(toEmail).orElse(null);
+            if (officer != null && officer.getPhoneNumber() != null) {
+                try {
+                    smsService.sendSms(officer.getPhoneNumber(), body);
+                    log.info("✅ SMS sent as fallback to officer: {}", officer.getEmployeeId());
+                } catch (Exception smsEx) {
+                    log.error("❌ SMS fallback also failed: {}", smsEx.getMessage());
+                }
+            } else {
+                TaxProfessional taxPro = taxProfessionalRepository.findByEmail(toEmail).orElse(null);
+                if (taxPro != null && taxPro.getPhoneNumber() != null) {
+                    try {
+                        smsService.sendSms(taxPro.getPhoneNumber(), body);
+                        log.info("✅ SMS sent as fallback to tax professional: {}", taxPro.getTpin());
+                    } catch (Exception smsEx) {
+                        log.error("❌ SMS fallback also failed: {}", smsEx.getMessage());
+                    }
+                } else {
+                    log.warn("⚠️ No phone number found for: {}", toEmail);
+                }
+            }
+            
+            throw new RuntimeException("Unexpected error sending simple email: " + e.getMessage(), e);
         }
     }
 
