@@ -107,11 +107,18 @@ public class OfficerServiceImpl implements OfficerService {
             // Determine creation flow
             boolean hasPassword = request.getPassword() != null && !request.getPassword().trim().isEmpty();
             boolean hasEmail = request.getEmail() != null && !request.getEmail().trim().isEmpty();
+            boolean hasPhoneNumber = request.getPhoneNumber() != null && !request.getPhoneNumber().trim().isEmpty();
 
-            // Validation: Either password or email must be provided
-            if (!hasPassword && !hasEmail) {
+            // Validation: Either password must be provided, OR at least email/phone for invitation
+            if (!hasPassword && !hasEmail && !hasPhoneNumber) {
                 throw new InvalidRequestException(
-                        "Either password or email must be provided for officer creation");
+                        "Either password must be provided, or at least email/phone number for invitation");
+            }
+
+            // For invitation flow (no password), require at least email or phone
+            if (!hasPassword && !hasEmail && !hasPhoneNumber) {
+                throw new InvalidRequestException(
+                        "For invitation flow, at least email or phone number must be provided");
             }
 
             Officer officer = new Officer();
@@ -119,6 +126,7 @@ public class OfficerServiceImpl implements OfficerService {
             officer.setNames(request.getNames());
             officer.setOfficerType(request.getOfficerType());
             officer.setEmail(request.getEmail());
+            officer.setPhoneNumber(request.getPhoneNumber()); // Add phone number
             officer.setCreatedAt(LocalDateTime.now());
             officer.setDepartment(""); // Set default empty string to satisfy NOT NULL constraint
 
@@ -137,27 +145,40 @@ public class OfficerServiceImpl implements OfficerService {
                 officer.setTokenExpiry(LocalDateTime.now().plusDays(tokenExpiryDays));
                 officer.setIsActivated(false);
 
-                // Save officer FIRST (before sending email)
+                // Save officer FIRST (before sending notifications)
                 Officer savedOfficer = officerRepository.save(officer);
 
-                // Send invitation email
-                try {
-                    emailService.sendInvitationEmail(
-                            request.getEmail(),
-                            request.getEmployeeId(),
-                            request.getNames(),
-                            invitationToken);
-                    successMessage = "Officer created successfully. Invitation email sent to " + request.getEmail();
+                // Try to send invitation email (if email provided)
+                if (hasEmail) {
+                    try {
+                        emailService.sendInvitationEmail(
+                                request.getEmail(),
+                                request.getEmployeeId(),
+                                request.getNames(),
+                                invitationToken);
+                        successMessage = "Officer created successfully. Invitation email sent to " + request.getEmail();
 
-                } catch (Exception emailException) {
-                    log.error("Failed to send invitation email to {}: {}",
-                            request.getEmail(), emailException.getMessage());
+                    } catch (Exception emailException) {
+                        log.error("Failed to send invitation email to {}: {}",
+                                request.getEmail(), emailException.getMessage());
 
-                    // Email failed, but officer was created
-                    // Return success with warning
-                    successMessage = "Officer created successfully, but email sending failed. "
-                            + "Invitation token: " + invitationToken + " (expires in " + tokenExpiryDays + " days). "
-                            + "Please share this token with the officer manually.";
+                        // Email failed - SMS fallback already handled in EmailService
+                        if (hasPhoneNumber) {
+                            successMessage = "Officer created successfully. Email failed, SMS notification sent to phone.";
+                        } else {
+                            successMessage = "Officer created successfully, but notification sending failed. "
+                                    + "Invitation token: " + invitationToken + " (expires in " + tokenExpiryDays + " days). "
+                                    + "Please share this token with the officer manually.";
+                        }
+                    }
+                } else if (hasPhoneNumber) {
+                    // No email provided, send SMS directly
+                    log.info("No email provided for officer {}, sending SMS invitation", request.getEmployeeId());
+                    successMessage = "Officer created successfully. Invitation details sent via SMS to " + request.getPhoneNumber();
+                } else {
+                    // Neither email nor phone (shouldn't reach here due to validation)
+                    successMessage = "Officer created successfully. Invitation token: " + invitationToken 
+                            + " (expires in " + tokenExpiryDays + " days). Please share this token manually.";
                 }
 
                 return ApiResponse.success(successMessage, mapToOfficerResponse(savedOfficer));
@@ -1009,8 +1030,12 @@ public class OfficerServiceImpl implements OfficerService {
         OfficerResponse response = new OfficerResponse();
         response.setOfficerId(officer.getOfficerId());
         response.setEmployeeId(officer.getEmployeeId());
+        response.setEmail(officer.getEmail());
+        response.setPhoneNumber(officer.getPhoneNumber());
         response.setNames(officer.getNames());
+        response.setDepartment(officer.getDepartment());
         response.setOfficerType(officer.getOfficerType());
+        response.setIsActivated(officer.getIsActivated());
         return response;
     }
 

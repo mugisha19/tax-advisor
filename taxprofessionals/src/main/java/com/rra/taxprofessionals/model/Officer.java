@@ -35,6 +35,9 @@ public class Officer {
     @Column(unique = true)
     private String email;
 
+    @Column
+    private String phoneNumber;
+
     @Column(nullable = false)
     private String names;
 

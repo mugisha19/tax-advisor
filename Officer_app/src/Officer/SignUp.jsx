@@ -13,12 +13,14 @@ import {
   ArrowLeft,
   UserPlus,
   Mail,
+  Phone,
 } from "lucide-react";
 
 const SignUp = () => {
   const [employeeId, setEmployeeId] = useState("");
   const [names, setNames] = useState("");
   const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [officerType, setOfficerType] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -49,6 +51,7 @@ const SignUp = () => {
       employeeId,
       names,
       email,
+      phoneNumber,
       officerType,
     };
 
@@ -73,6 +76,7 @@ const SignUp = () => {
         // Clear form
         setEmployeeId("");
         setNames("");
+        setPhoneNumber("");
         setEmail("");
         setOfficerType("");
 
@@ -247,6 +251,38 @@ const SignUp = () => {
                     disabled={loading}
                     className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 placeholder-gray-400 hover:border-gray-400"
                   />
+                <p className="text-xs text-gray-500 mt-1">
+                  For receiving invitation link and notifications
+                </p>
+              </div>
+
+              {/* Phone Number */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="phoneNumber"
+                  className="block text-sm font-semibold text-gray-700"
+                >
+                  Phone Number (Optional)
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Phone className="w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                  </div>
+                  <input
+                    id="phoneNumber"
+                    type="tel"
+                    placeholder="e.g., 0781234567 or +250781234567"
+                    name="phoneNumber"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    disabled={loading}
+                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 placeholder-gray-400 hover:border-gray-400"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Used for SMS notifications
+                </p>
+              </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   An invitation email will be sent to this address

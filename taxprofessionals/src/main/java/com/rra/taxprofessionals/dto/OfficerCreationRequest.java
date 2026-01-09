@@ -19,6 +19,8 @@ public class OfficerCreationRequest {
     @Email(message = "Valid email format required")
     private String email; // Optional if password provided
 
+    private String phoneNumber; // Optional but recommended for SMS notifications
+
     @NotBlank(message = "Names are required")
     private String names;
 
