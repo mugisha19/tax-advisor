@@ -251,6 +251,7 @@ const SignUp = () => {
                     disabled={loading}
                     className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 placeholder-gray-400 hover:border-gray-400"
                   />
+                </div>
                 <p className="text-xs text-gray-500 mt-1">
                   For receiving invitation link and notifications
                 </p>
@@ -281,11 +282,6 @@ const SignUp = () => {
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   Used for SMS notifications
-                </p>
-              </div>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  An invitation email will be sent to this address
                 </p>
               </div>
 

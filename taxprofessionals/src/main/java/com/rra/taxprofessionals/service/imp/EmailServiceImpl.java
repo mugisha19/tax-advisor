@@ -180,9 +180,10 @@ public class EmailServiceImpl implements EmailService {
     public void sendPasswordResetEmail(String toEmail, String employeeId, String names, String resetToken) {
         log.info("📧 Preparing to send password reset email to: {}", toEmail);
 
+        String resetLink = null;
         try {
             String encodedToken = URLEncoder.encode(resetToken, StandardCharsets.UTF_8);
-            String resetLink = officerFrontendUrl + "/reset-password?token=" + encodedToken + "&type=officer";
+            resetLink = officerFrontendUrl + "/reset-password?token=" + encodedToken + "&type=officer";
             String htmlContent = buildPasswordResetEmailTemplate(names, employeeId, resetLink);
 
             log.info("📤 Sending password reset email via SMTP...");
@@ -196,7 +197,10 @@ public class EmailServiceImpl implements EmailService {
             log.error("Stack trace:", e);
             
             // Try SMS fallback for officer
-            trySmsForOfficer(employeeId, "Password reset request for RRA Tax Professionals Platform. Reset link: " + resetLink);
+            String smsMessage = resetLink != null 
+                ? "Password reset request for RRA Tax Professionals Platform. Reset link: " + resetLink
+                : "Password reset request for RRA Tax Professionals Platform. Please contact admin for reset link.";
+            trySmsForOfficer(employeeId, smsMessage);
             
             throw new RuntimeException("Failed to send password reset email: " + e.getMessage(), e);
         } catch (Exception e) {
@@ -204,7 +208,10 @@ public class EmailServiceImpl implements EmailService {
             log.error("Stack trace:", e);
             
             // Try SMS fallback for officer
-            trySmsForOfficer(employeeId, "Password reset request for RRA Tax Professionals Platform. Reset link: " + resetLink);
+            String smsMessage = resetLink != null 
+                ? "Password reset request for RRA Tax Professionals Platform. Reset link: " + resetLink
+                : "Password reset request for RRA Tax Professionals Platform. Please contact admin for reset link.";
+            trySmsForOfficer(employeeId, smsMessage);
             
             throw new RuntimeException("Unexpected error sending password reset email: " + e.getMessage(), e);
         }
