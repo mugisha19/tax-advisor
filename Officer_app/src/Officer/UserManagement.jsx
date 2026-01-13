@@ -11,7 +11,7 @@ const UserManagement = () => {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-  const [size] = useState(10);
+  const [size, setSize] = useState(10);
 
   const [editModal, setEditModal] = useState(null);
   const [resetModal, setResetModal] = useState(null);
@@ -21,7 +21,7 @@ const UserManagement = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [search, typeFilter, docFilter, page]);
+  }, [search, typeFilter, docFilter, page, size]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -157,6 +157,22 @@ const UserManagement = () => {
               <option value="">All Documents</option>
               <option value="true">Has Documents</option>
               <option value="false">No Documents</option>
+            </select>
+
+            {/* Page Size Selector */}
+            <select
+              value={size}
+              onChange={(e) => {
+                setSize(Number(e.target.value));
+                setPage(0);
+              }}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option value={5}>5 per page</option>
+              <option value={10}>10 per page</option>
+              <option value={25}>25 per page</option>
+              <option value={50}>50 per page</option>
+              <option value={100}>100 per page</option>
             </select>
           </div>
         </div>
