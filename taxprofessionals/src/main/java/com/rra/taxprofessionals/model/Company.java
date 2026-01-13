@@ -40,6 +40,9 @@ public class Company {
     @Column(name = "company_email", nullable = false, unique = true)
     private String companyEmail;
 
+    @Column(name = "company_phone")
+    private String companyPhone;
+
     @Column(nullable = false)
     private String password;
 

@@ -78,11 +78,17 @@ public class OfficerServiceImpl implements OfficerService {
     @Autowired
     private DocumentRejectionRepository documentRejectionRepository;
 
+    @Autowired
+    private com.rra.taxprofessionals.service.SmsService smsService;
+
     @Value("${app.invitation.token.expiry.days:7}")
     private int tokenExpiryDays;
 
     @Value("${app.password.reset.token.expiry.hours:24}")
     private int resetTokenExpiryHours;
+
+    @Value("${app.frontend.taxprofessional.url}")
+    private String taxProfessionalFrontendUrl;
 
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -576,6 +582,7 @@ public class OfficerServiceImpl implements OfficerService {
 
                 log.info("✅ Reset token generated for Company: {}", company.getCompanyTin());
 
+                boolean emailSent = false;
                 // Send password reset email for Company
                 try {
                     emailService.sendApplicantPasswordResetEmail(
@@ -583,11 +590,33 @@ public class OfficerServiceImpl implements OfficerService {
                             company.getCompanyTin(),
                             company.getCompanyName(),
                             resetToken,
-                            "COMPANY"); // Account type
+                            "COMPANY");
                     log.info("✅ Company password reset email sent successfully to: {}", company.getCompanyEmail());
+                    emailSent = true;
                 } catch (Exception emailException) {
                     log.error("❌ Failed to send password reset email to company {}: {}",
                             company.getCompanyEmail(), emailException.getMessage());
+                    
+                    // SMS fallback if company has phone number
+                    if (company.getCompanyPhone() != null && !company.getCompanyPhone().trim().isEmpty()) {
+                        try {
+                            String encodedToken = java.net.URLEncoder.encode(resetToken, java.nio.charset.StandardCharsets.UTF_8);
+                            String resetLink = taxProfessionalFrontendUrl + "/reset-password?token=" + encodedToken + "&type=company";
+                            String smsMessage = "[RRA Tax Professional Portal] Password reset requested for " + company.getCompanyName() + 
+                                    ". Reset link: " + resetLink + " (expires in " + resetTokenExpiryHours + " hours)";
+                            boolean smsSent = smsService.sendSms(company.getCompanyPhone(), smsMessage);
+                            if (smsSent) {
+                                log.info("✅ SMS fallback sent to company phone: {}", company.getCompanyPhone());
+                            } else {
+                                log.error("❌ SMS fallback failed for company: {}", company.getCompanyTin());
+                            }
+                        } catch (Exception smsException) {
+                            log.error("❌ SMS fallback exception for company {}: {}",
+                                    company.getCompanyTin(), smsException.getMessage());
+                        }
+                    } else {
+                        log.warn("⚠️ No phone number available for SMS fallback - Company: {}", company.getCompanyTin());
+                    }
                 }
 
                 return ApiResponse.success(
