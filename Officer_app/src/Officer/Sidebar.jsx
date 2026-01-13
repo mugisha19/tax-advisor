@@ -10,6 +10,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaTachometerAlt,
+  FaUsersCog,
 } from "react-icons/fa";
 import Logo from "../assets/rra.jpg";
 
@@ -63,6 +64,12 @@ const Sidebar = () => {
       name: "Officers",
       icon: FaUsers,
       path: "/officers",
+      roles: ["ADMIN"],
+    },
+    {
+      name: "User Management",
+      icon: FaUsersCog,
+      path: "/user-management",
       roles: ["ADMIN"],
     },
   ];

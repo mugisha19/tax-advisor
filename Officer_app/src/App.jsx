@@ -8,6 +8,7 @@ import AdminDashboard from "./Officer/AdminDashboard";
 import Login from "./Officer/Login";
 import SetPassword from "./Officer/SetPassword";
 import ProtectedRoute from "./Officer/ProtectedRoute";
+import UserManagement from "./Officer/UserManagement";
 
 function App() {
   return (
@@ -33,6 +34,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["ADMIN"]}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user-management"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <UserManagement />
               </ProtectedRoute>
             }
           />
