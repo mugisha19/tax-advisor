@@ -39,7 +39,7 @@ export interface CompanyRegistrationData {
   
   // Optional fields
   companyAddress?: string;
-  companyPhoneNumber?: string;
+  companyPhone?: string;
   companyFax?: string;
   category?: string;
   applicantNames?: string;

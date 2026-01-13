@@ -122,6 +122,11 @@ const SignUpPage: React.FC = () => {
       setCell(supplierData.Cell || "");
       setVillage(supplierData.Village || "");
 
+      // Additional fields from API
+      setCategory(supplierData.Category || "");
+      setDetailedAddress(supplierData.DetailedAddress || "");
+      setFax(supplierData.Fax || "");
+
       setIsTinValidated(true);
       setValidating(false);
       setError("");
@@ -181,7 +186,7 @@ const SignUpPage: React.FC = () => {
           accountType,
           // Optional fields - only include if provided
           companyEmail: email || "",
-          companyPhoneNumber: phoneNumber || "",
+          companyPhone: phoneNumber || "",
           province: province || "",
           district: district || "",
           sector: sector || "",

@@ -113,6 +113,7 @@ public class CompanyServiceImpl implements CompanyService {
             company.setCompanyTin(request.getCompanyTin());
             company.setCompanyName(request.getCompanyName());
             company.setCompanyEmail(request.getCompanyEmail());
+            company.setCompanyPhone(request.getCompanyPhone());
             company.setPassword(passwordEncoder.encode(request.getPassword()));
             company.setProvince(companyProvince);
             company.setDistrict(companyDistrict);

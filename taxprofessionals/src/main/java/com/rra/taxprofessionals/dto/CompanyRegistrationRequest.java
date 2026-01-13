@@ -27,6 +27,7 @@ public class CompanyRegistrationRequest {
     
     private String companyTin;
     private String companyEmail;
+    private String companyPhone;
     private String password;
     private Integer numberOfApplicants;
     private List<CompanyMemberRequest> applicants;
