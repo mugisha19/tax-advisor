@@ -1,5 +1,12 @@
 package com.rra.taxprofessionals.controller;
 
+/*
+ * DISABLED: This controller is a duplicate of AdminController endpoints.
+ * AdminController already handles all /api/admin/users endpoints.
+ * This file is kept for reference but disabled to prevent "Ambiguous mapping" error.
+ */
+
+/*
 import com.rra.taxprofessionals.dto.AdminPasswordResetResponse;
 import com.rra.taxprofessionals.dto.ApiResponse;
 import com.rra.taxprofessionals.dto.UserManagementDTO;
@@ -68,3 +75,4 @@ public class UserManagementController {
         return ResponseEntity.ok(ApiResponse.success("User deleted successfully", null));
     }
 }
+*/
