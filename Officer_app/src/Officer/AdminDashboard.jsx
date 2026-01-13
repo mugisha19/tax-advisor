@@ -35,6 +35,8 @@ const AdminDashboard = () => {
   const [selectedOfficer, setSelectedOfficer] = useState(null);
   const [updateFormData, setUpdateFormData] = useState({
     names: "",
+    email: "",
+    phoneNumber: "",
     officerType: "",
   });
   const [passwordFormData, setPasswordFormData] = useState({
@@ -99,6 +101,8 @@ const AdminDashboard = () => {
     setSelectedOfficer(officer);
     setUpdateFormData({
       names: officer.names,
+      email: officer.email || "",
+      phoneNumber: officer.phoneNumber || "",
       officerType: officer.officerType,
     });
     setShowUpdateModal(true);
@@ -622,6 +626,36 @@ const AdminDashboard = () => {
                     onChange={handleUpdateInputChange}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors disabled:bg-gray-100"
                     required
+                    disabled={submitting}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="officer@rra.gov.rw"
+                    value={updateFormData.email}
+                    onChange={handleUpdateInputChange}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors disabled:bg-gray-100"
+                    disabled={submitting}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phoneNumber"
+                    placeholder="e.g., 0781234567 or +250781234567"
+                    value={updateFormData.phoneNumber}
+                    onChange={handleUpdateInputChange}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors disabled:bg-gray-100"
                     disabled={submitting}
                   />
                 </div>

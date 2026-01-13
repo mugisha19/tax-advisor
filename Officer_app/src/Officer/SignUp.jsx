@@ -263,7 +263,7 @@ const SignUp = () => {
                   htmlFor="phoneNumber"
                   className="block text-sm font-semibold text-gray-700"
                 >
-                  Phone Number (Optional)
+                  Phone Number *
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -276,6 +276,7 @@ const SignUp = () => {
                     name="phoneNumber"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
+                    required
                     disabled={loading}
                     className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 placeholder-gray-400 hover:border-gray-400"
                   />

@@ -622,6 +622,14 @@ public class OfficerServiceImpl implements OfficerService {
                 officer.setNames(request.getNames());
             }
 
+            if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+                officer.setEmail(request.getEmail());
+            }
+
+            if (request.getPhoneNumber() != null && !request.getPhoneNumber().trim().isEmpty()) {
+                officer.setPhoneNumber(request.getPhoneNumber());
+            }
+
             if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
                 officer.setPassword(passwordEncoder.encode(request.getPassword()));
             }
