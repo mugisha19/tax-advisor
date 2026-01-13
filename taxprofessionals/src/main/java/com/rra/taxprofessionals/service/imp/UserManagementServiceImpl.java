@@ -13,7 +13,7 @@ import com.rra.taxprofessionals.repository.DocumentRepository;
 import com.rra.taxprofessionals.repository.TaxProfessionalRepository;
 import com.rra.taxprofessionals.service.SmsService;
 import com.rra.taxprofessionals.service.UserManagementService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -36,15 +36,20 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class UserManagementServiceImpl implements UserManagementService {
 
-    private final TaxProfessionalRepository taxProfessionalRepository;
-    private final CompanyRepository companyRepository;
-    private final DocumentRepository documentRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JavaMailSender mailSender;
-    private final SmsService smsService;
+    @Autowired
+    private TaxProfessionalRepository taxProfessionalRepository;
+    @Autowired
+    private CompanyRepository companyRepository;
+    @Autowired
+    private DocumentRepository documentRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JavaMailSender mailSender;
+    @Autowired
+    private SmsService smsService;
 
     @Value("${app.frontend.taxprofessional.url}")
     private String taxProfessionalFrontendUrl;

@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,14 +17,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rra.taxprofessionals.dto.AdminPasswordResetRequest;
+import com.rra.taxprofessionals.dto.AdminPasswordResetResponse;
 import com.rra.taxprofessionals.dto.ApiResponse;
 import com.rra.taxprofessionals.dto.OfficerCreationRequest;
 import com.rra.taxprofessionals.dto.OfficerResponse;
 import com.rra.taxprofessionals.dto.OfficerUpdateRequest;
 import com.rra.taxprofessionals.dto.TaxProfessionalResponse;
+import com.rra.taxprofessionals.dto.UserManagementDTO;
+import com.rra.taxprofessionals.dto.UserUpdateRequest;
 import com.rra.taxprofessionals.enums.ApplicationStatus;
 import com.rra.taxprofessionals.exception.ResourceNotFoundException;
 import com.rra.taxprofessionals.model.Officer;
@@ -33,6 +38,7 @@ import com.rra.taxprofessionals.repository.TaxProfessionalRepository;
 import com.rra.taxprofessionals.service.CertificatePdfService;
 import com.rra.taxprofessionals.service.EmailService;
 import com.rra.taxprofessionals.service.OfficerService;
+import com.rra.taxprofessionals.service.UserManagementService;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -58,8 +64,64 @@ public class AdminController {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private UserManagementService userManagementService;
+
     @Value("${file.upload-dir}")
     private String uploadDir;
+
+    // ==================== USER MANAGEMENT ENDPOINTS ====================
+    
+    @GetMapping("/users")
+    public ResponseEntity<ApiResponse<Page<UserManagementDTO>>> getAllUsers(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Boolean hasSubmittedDocuments,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<UserManagementDTO> users = userManagementService.getAllUsers(search, type, hasSubmittedDocuments, page, size);
+        return ResponseEntity.ok(ApiResponse.success("Users retrieved successfully", users));
+    }
+
+    @GetMapping("/users/{id}")
+    public ResponseEntity<ApiResponse<UserManagementDTO>> getUserById(
+            @PathVariable String id,
+            @RequestParam String type
+    ) {
+        UserManagementDTO user = userManagementService.getUserById(id, type);
+        return ResponseEntity.ok(ApiResponse.success("User retrieved successfully", user));
+    }
+
+    @PutMapping("/users/{id}")
+    public ResponseEntity<ApiResponse<UserManagementDTO>> updateUser(
+            @PathVariable String id,
+            @RequestParam String type,
+            @RequestBody UserUpdateRequest request
+    ) {
+        UserManagementDTO user = userManagementService.updateUser(id, type, request);
+        return ResponseEntity.ok(ApiResponse.success("User updated successfully", user));
+    }
+
+    @PostMapping("/users/{id}/reset-password")
+    public ResponseEntity<ApiResponse<AdminPasswordResetResponse>> resetUserPassword(
+            @PathVariable String id,
+            @RequestParam String type
+    ) {
+        AdminPasswordResetResponse response = userManagementService.resetUserPassword(id, type);
+        return ResponseEntity.ok(ApiResponse.success("Password reset link generated", response));
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(
+            @PathVariable String id,
+            @RequestParam String type
+    ) {
+        userManagementService.deleteUser(id, type);
+        return ResponseEntity.ok(ApiResponse.success("User deleted successfully", null));
+    }
+
+    // ==================== OFFICER MANAGEMENT ENDPOINTS ====================
 
     @PostMapping("/officers")
     public ResponseEntity<ApiResponse<OfficerResponse>> createOfficer(

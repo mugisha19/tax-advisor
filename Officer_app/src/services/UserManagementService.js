@@ -29,7 +29,7 @@ export const getAllUsers = (search, type, hasSubmittedDocuments, page, size) => 
   params.append("page", page);
   params.append("size", size);
   
-  return api.get(`?${params.toString()}`);
+  return api.get("", { params });
 };
 
 export const getUserById = (id, type) => {
