@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaSearch, FaEdit, FaTrash, FaKey, FaTimes, FaCopy, FaCheck } from "react-icons/fa";
+import { FaSearch, FaEdit, FaTrash, FaKey, FaTimes, FaCopy, FaCheck, FaSpinner, FaUser, FaEnvelope, FaPhone, FaBuilding } from "react-icons/fa";
 import * as UserManagementService from "../services/UserManagementService";
 
 const UserManagement = () => {
@@ -17,6 +17,7 @@ const UserManagement = () => {
   const [resetModal, setResetModal] = useState(null);
   const [deleteModal, setDeleteModal] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [resettingUserId, setResettingUserId] = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -72,11 +73,14 @@ const UserManagement = () => {
   };
 
   const handleResetPassword = async (user) => {
+    setResettingUserId(user.id);
     try {
       const response = await UserManagementService.resetUserPassword(user.id, user.type);
       setResetModal(response.data.data);
     } catch (error) {
       alert(error.response?.data?.message || "Failed to reset password");
+    } finally {
+      setResettingUserId(null);
     }
   };
 
@@ -230,24 +234,31 @@ const UserManagement = () => {
                           >
                             <FaEdit />
                           </button>
-                          <button
-                            onClick={() => handleResetPassword(user)}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title="Reset Password"
-                          >
-                            <FaKey />
-                          </button>
-                          <button
-                            onClick={() => setDeleteModal(user)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Delete"
-                            disabled={
-                              (user.type === "COMPANY" && user.memberCount > 0) ||
-                              (user.type !== "COMPANY" && user.hasSubmittedDocuments)
-                            }
-                          >
-                            <FaTrash />
-                          </button>
+                          {/* Only show reset button for INDIVIDUAL and COMPANY, not MEMBER */}
+                          {user.type !== "MEMBER" && (
+                            <button
+                              onClick={() => handleResetPassword(user)}
+                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Reset Password"
+                              disabled={resettingUserId === user.id}
+                            >
+                              {resettingUserId === user.id ? (
+                                <FaSpinner className="animate-spin" />
+                              ) : (
+                                <FaKey />
+                              )}
+                            </button>
+                          )}
+                          {/* Only show delete button when user has no documents */}
+                          {!user.hasSubmittedDocuments && !(user.type === "COMPANY" && user.memberCount > 0) && (
+                            <button
+                              onClick={() => setDeleteModal(user)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete"
+                            >
+                              <FaTrash />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -290,77 +301,145 @@ const UserManagement = () => {
 
       {/* Edit Modal */}
       {editModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Edit User</h2>
-              <button onClick={() => setEditModal(null)} className="text-gray-500 hover:text-gray-700">
-                <FaTimes />
-              </button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    {editModal.type === "COMPANY" ? (
+                      <FaBuilding className="text-white text-lg" />
+                    ) : (
+                      <FaUser className="text-white text-lg" />
+                    )}
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Edit {editModal.type === "COMPANY" ? "Company" : "User"}</h2>
+                    <p className="text-blue-100 text-sm">
+                      {editModal.type === "COMPANY" ? editModal.companyTin : editModal.tpin}
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setEditModal(null)} 
+                  className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-full transition-colors"
+                >
+                  <FaTimes />
+                </button>
+              </div>
             </div>
-            <div className="space-y-4">
-              {editModal.type === "COMPANY" ? (
-                <>
-                  <input
-                    type="text"
-                    placeholder="Company Name"
-                    value={editModal.companyName}
-                    onChange={(e) => setEditModal({ ...editModal, companyName: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    value={editModal.email}
-                    onChange={(e) => setEditModal({ ...editModal, email: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Phone Number"
-                    value={editModal.phoneNumber}
-                    onChange={(e) => setEditModal({ ...editModal, phoneNumber: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
-                </>
-              ) : (
-                <>
-                  <input
-                    type="text"
-                    placeholder="Full Name"
-                    value={editModal.names}
-                    onChange={(e) => setEditModal({ ...editModal, names: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    value={editModal.email}
-                    onChange={(e) => setEditModal({ ...editModal, email: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Phone Number"
-                    value={editModal.phoneNumber}
-                    onChange={(e) => setEditModal({ ...editModal, phoneNumber: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
-                </>
-              )}
+            
+            {/* Modal Body */}
+            <div className="p-6">
+              <div className="space-y-5">
+                {editModal.type === "COMPANY" ? (
+                  <>
+                    {/* Company Name */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <FaBuilding className="text-gray-400" />
+                        Company Name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter company name"
+                        value={editModal.companyName}
+                        onChange={(e) => setEditModal({ ...editModal, companyName: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                    {/* Email */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <FaEnvelope className="text-gray-400" />
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="Enter email address"
+                        value={editModal.email}
+                        onChange={(e) => setEditModal({ ...editModal, email: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                    {/* Phone */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <FaPhone className="text-gray-400" />
+                        Phone Number
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter phone number"
+                        value={editModal.phoneNumber}
+                        onChange={(e) => setEditModal({ ...editModal, phoneNumber: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Full Name */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <FaUser className="text-gray-400" />
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter full name"
+                        value={editModal.names}
+                        onChange={(e) => setEditModal({ ...editModal, names: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                    {/* Email */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <FaEnvelope className="text-gray-400" />
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="Enter email address"
+                        value={editModal.email}
+                        onChange={(e) => setEditModal({ ...editModal, email: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                    {/* Phone */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <FaPhone className="text-gray-400" />
+                        Phone Number
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter phone number"
+                        value={editModal.phoneNumber}
+                        onChange={(e) => setEditModal({ ...editModal, phoneNumber: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={handleSaveEdit}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Save Changes
-              </button>
+            
+            {/* Modal Footer */}
+            <div className="bg-gray-50 px-6 py-4 flex gap-3">
               <button
                 onClick={() => setEditModal(null)}
-                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                className="flex-1 px-4 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-medium"
               >
                 Cancel
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all font-medium shadow-lg shadow-blue-500/30"
+              >
+                Save Changes
               </button>
             </div>
           </div>
