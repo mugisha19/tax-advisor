@@ -705,8 +705,31 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                       </div>
                     )}
 
+                  {/* ==================== FIRST REJECTION - DEADLINE EXPIRED ==================== */}
+                  {isFirstRejection && isDeadlineExpired && (
+                    <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                      <div className="flex items-start space-x-3">
+                        <XCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <h4 className="text-sm font-semibold text-red-800 mb-2">
+                            ⏰ Resubmission Period Expired
+                          </h4>
+                          <p className="text-sm text-red-700 mb-2">
+                            Your deadline to resubmit was <strong>{formatDeadline()}</strong>.
+                          </p>
+                          <p className="text-sm text-red-600">
+                            The 3 working day resubmission window has passed.
+                            You can no longer update documents or resubmit this application.
+                            Please contact RRA for assistance.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {/* ================================================================================ */}
+
                   {/* ==================== FIRST REJECTION - CAN RESUBMIT ONCE ==================== */}
-                  {isFirstRejection && (
+                  {isFirstRejection && !isDeadlineExpired && (
                     <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <div className="flex items-start space-x-3">
                         <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -719,6 +742,11 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                             opportunity. If rejected again, no further
                             resubmissions will be allowed.
                           </p>
+                          {application?.resubmissionDeadline && (
+                            <p className="text-sm text-orange-600 font-medium mb-2">
+                              ⏰ Deadline: Resubmit by <strong>{formatDeadline()}</strong>
+                            </p>
+                          )}
                           {allProblematicDocsUpdatedLocally ? (
                             <p className="text-sm text-blue-700 mb-2">
                               ✅ All problematic documents have been updated.
@@ -887,21 +915,9 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                       </p>
                     )}
                     {/* Show message for deadline expired */}
-                    {isDeadlineExpired && (
-                      <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
-                        <p className="text-sm text-red-600 font-medium">
-                          ⏰ Resubmission Period Expired
-                        </p>
-                        <p className="text-xs text-red-500 mt-1">
-                          Your deadline was <strong>{formatDeadline()}</strong>. 
-                          The 3 working day window has passed. Please contact RRA for assistance.
-                        </p>
-                      </div>
-                    )}
-                    {/* Show deadline info for first rejection within window */}
-                    {isFirstRejection && !isDeadlineExpired && application?.resubmissionDeadline && (
-                      <p className="text-sm text-orange-600 mt-1 font-medium">
-                        ⏰ Deadline: Resubmit by <strong>{formatDeadline()}</strong>
+                    {isDeadlineExpired && !isSecondRejection && (
+                      <p className="text-sm text-red-600 mt-1 font-medium">
+                        ⚠️ Document updates are not allowed - resubmission deadline has passed.
                       </p>
                     )}
                   </div>
