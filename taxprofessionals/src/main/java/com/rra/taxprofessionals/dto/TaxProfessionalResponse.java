@@ -49,6 +49,10 @@ public class TaxProfessionalResponse {
     private LocalDateTime reapplicationDate;
     private Boolean isReapplication;
     private Boolean hasReapplied;
+    
+    // ==================== RESUBMISSION DEADLINE FIELDS ====================
+    private LocalDateTime firstRejectionDate;
+    private LocalDateTime resubmissionDeadline;
 
     // ==================== COMPANY ACCOUNT FIELDS ====================
     private String accountType; // "INDIVIDUAL" or "COMPANY"

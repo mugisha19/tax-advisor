@@ -1,6 +1,9 @@
 package com.rra.taxprofessionals.model;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -273,21 +276,89 @@ public class TaxProfessional {
     }
 
     /**
-     * Checks if applicant is eligible to reapply Business rule: Applicants can
-     * only resubmit ONCE after first rejection - rejectionCount = 0: New
-     * application, can submit (but this method is called when REJECTED) -
-     * rejectionCount = 1: First rejection, can resubmit ONCE - rejectionCount
-     * >= 2: Second or more rejection, BLOCKED from resubmission
+     * Checks if applicant is eligible to reapply Business rules:
+     * 1. Must be in REJECTED status
+     * 2. rejectionCount must be < 2 (can only resubmit once after first rejection)
+     * 3. Must be within 3 working days of the first rejection date
      *
      * @return true if applicant can reapply, false otherwise
      */
     public boolean canReapply() {
-        // Must be in REJECTED status AND have been rejected less than 2 times
-        // rejectionCount < 2 means: 0 or 1 rejections so far
-        // When rejectionCount = 1 (first rejection), they can resubmit once
-        // When rejectionCount = 2 (second rejection), they cannot resubmit anymore
-        return this.status == ApplicationStatus.REJECTED
-                && (this.rejectionCount == null || this.rejectionCount < 2);
+        // Must be in REJECTED status
+        if (this.status != ApplicationStatus.REJECTED) {
+            return false;
+        }
+        
+        // Must have been rejected less than 2 times
+        if (this.rejectionCount != null && this.rejectionCount >= 2) {
+            return false;
+        }
+        
+        // Must be within 3 working days of first rejection
+        if (!isWithinResubmissionDeadline()) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Checks if the current date/time is within the 3 working day resubmission window.
+     * Working days exclude Saturday and Sunday.
+     * The deadline is the end of the 3rd working day after rejection.
+     *
+     * @return true if within deadline, false if deadline has passed
+     */
+    public boolean isWithinResubmissionDeadline() {
+        // If no first rejection date, allow resubmission (backward compatibility)
+        if (this.firstRejectionDate == null) {
+            return true;
+        }
+        
+        LocalDateTime deadline = calculateResubmissionDeadline();
+        LocalDateTime now = LocalDateTime.now();
+        
+        return now.isBefore(deadline) || now.isEqual(deadline);
+    }
+    
+    /**
+     * Calculates the resubmission deadline: end of the 3rd working day after rejection.
+     * Working days are Monday-Friday (excludes Saturday and Sunday).
+     * Counting starts from the day AFTER the rejection date.
+     *
+     * @return the deadline datetime (end of 3rd working day: 23:59:59)
+     */
+    public LocalDateTime calculateResubmissionDeadline() {
+        if (this.firstRejectionDate == null) {
+            return null;
+        }
+        
+        // Start counting from the day after rejection
+        LocalDate currentDate = this.firstRejectionDate.toLocalDate().plusDays(1);
+        int workingDaysCount = 0;
+        
+        // Count 3 working days (excluding Saturday and Sunday)
+        while (workingDaysCount < 3) {
+            DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
+            if (dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY) {
+                workingDaysCount++;
+            }
+            if (workingDaysCount < 3) {
+                currentDate = currentDate.plusDays(1);
+            }
+        }
+        
+        // Return end of the 3rd working day (23:59:59.999999999)
+        return LocalDateTime.of(currentDate, LocalTime.MAX);
+    }
+    
+    /**
+     * Checks if the resubmission deadline has passed.
+     *
+     * @return true if deadline has passed, false otherwise
+     */
+    public boolean isResubmissionDeadlinePassed() {
+        return !isWithinResubmissionDeadline();
     }
 
     /**

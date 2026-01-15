@@ -25,6 +25,7 @@ import {
   isSecondRejection as checkIsSecondRejection,
   canResubmitApplication,
   getResubmissionBlockedMessage,
+  isResubmissionDeadlinePassed,
 } from "../types/application";
 import type { Document as DocumentType } from "../types/document";
 import {
@@ -184,11 +185,12 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
   const handleReplaceDocument = async (docId: number, documentType: string) => {
     if (!application) return;
 
-    // ==================== REJECTION LIMIT VALIDATION ====================
-    // Block updates on second rejection using helper function
-    if (checkIsSecondRejection(application)) {
+    // ==================== REJECTION LIMIT & DEADLINE VALIDATION ====================
+    // Block updates on second rejection OR if deadline has passed
+    if (checkIsSecondRejection(application) || isResubmissionDeadlinePassed(application)) {
+      const deadlineExpired = isResubmissionDeadlinePassed(application);
       showToast(
-        getResubmissionBlockedMessage(true), // true = company member
+        getResubmissionBlockedMessage(true, deadlineExpired), // true = company member
         "error"
       );
       return;
@@ -337,11 +339,12 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
   const handleResubmit = async () => {
     if (!application) return;
 
-    // ==================== REJECTION LIMIT VALIDATION ====================
+    // ==================== REJECTION LIMIT & DEADLINE VALIDATION ====================
     // Check if resubmission is allowed using helper function
     if (!canResubmitApplication(application)) {
+      const deadlineExpired = isResubmissionDeadlinePassed(application);
       showToast(
-        getResubmissionBlockedMessage(true), // true = company member
+        getResubmissionBlockedMessage(true, deadlineExpired), // true = company member
         "error"
       );
       return;
@@ -445,6 +448,23 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
   // Check if this is second rejection (rejectionCount >= 2) using helper function
   const isSecondRejection = checkIsSecondRejection(application);
 
+  // Check if first rejection but deadline has passed
+  const isDeadlineExpired = isFirstRejection && isResubmissionDeadlinePassed(application);
+
+  // Format the resubmission deadline for display
+  const formatDeadline = (): string => {
+    if (!application?.resubmissionDeadline) return "";
+    const deadline = new Date(application.resubmissionDeadline);
+    return deadline.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   // Check if there are problematic documents
   const hasProblematicDocuments =
     application?.status === ApplicationStatus.REJECTED &&
@@ -465,16 +485,17 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
       application.problematicDocumentIds.length === 0);
 
   // Check if member can resubmit using helper function
-  // Must be first rejection AND (all docs updated locally OR backend cleared problematic list)
+  // Must be first rejection AND within deadline AND (all docs updated locally OR backend cleared problematic list)
   const canResubmit =
     canResubmitApplication(application) &&
     (allProblematicDocsUpdatedLocally || allProblematicDocsUpdated);
 
   // Check if document updates are allowed
+  // Must be PENDING/REGISTERED OR (first rejection AND within deadline)
   const canUpdateDocuments =
     application?.status === ApplicationStatus.PENDING ||
     application?.status === ApplicationStatus.REGISTERED ||
-    isFirstRejection;
+    (isFirstRejection && !isResubmissionDeadlinePassed(application));
 
   // Count remaining problematic documents
   const remainingProblematicDocs = hasProblematicDocuments
@@ -865,6 +886,24 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                         rejection.
                       </p>
                     )}
+                    {/* Show message for deadline expired */}
+                    {isDeadlineExpired && (
+                      <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                        <p className="text-sm text-red-600 font-medium">
+                          ⏰ Resubmission Period Expired
+                        </p>
+                        <p className="text-xs text-red-500 mt-1">
+                          Your deadline was <strong>{formatDeadline()}</strong>. 
+                          The 3 working day window has passed. Please contact RRA for assistance.
+                        </p>
+                      </div>
+                    )}
+                    {/* Show deadline info for first rejection within window */}
+                    {isFirstRejection && !isDeadlineExpired && application?.resubmissionDeadline && (
+                      <p className="text-sm text-orange-600 mt-1 font-medium">
+                        ⏰ Deadline: Resubmit by <strong>{formatDeadline()}</strong>
+                      </p>
+                    )}
                   </div>
 
                   <div className="p-4">
@@ -906,6 +945,9 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
 
                               // Second rejection: NO replace allowed
                               if (isSecondRejection) {
+                                canReplace = false;
+                              } else if (isDeadlineExpired) {
+                                // First rejection but deadline passed: NO replace allowed
                                 canReplace = false;
                               } else if (hasProblematicDocuments) {
                                 // First rejection with problematic documents: only problematic docs can be replaced

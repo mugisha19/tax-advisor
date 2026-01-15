@@ -93,6 +93,18 @@ export interface Application {
    * Updated when status changes from REJECTED to PENDING
    */
   reapplicationDate?: string;
+  
+  /**
+   * Date when the first rejection occurred
+   * Used to calculate the 3 working day resubmission deadline
+   */
+  firstRejectionDate?: string;
+  
+  /**
+   * Calculated deadline for resubmission (end of 3rd working day after rejection)
+   * After this date, resubmission is no longer allowed
+   */
+  resubmissionDeadline?: string;
   // ========================================================================
 }
 
@@ -106,7 +118,39 @@ export interface ApiResponse<T> {
 // ==================== HELPER FUNCTIONS ====================
 
 /**
- * Checks if an application can be resubmitted based on rejection count
+ * Checks if the resubmission deadline has passed
+ * @param application The application to check
+ * @returns true if deadline has passed, false otherwise
+ */
+export const isResubmissionDeadlinePassed = (
+  application: Application | null
+): boolean => {
+  if (!application) return false;
+  if (!application.resubmissionDeadline) return false;
+  
+  const deadline = new Date(application.resubmissionDeadline);
+  const now = new Date();
+  
+  return now > deadline;
+};
+
+/**
+ * Checks if the application is within the resubmission deadline
+ * @param application The application to check
+ * @returns true if within deadline, false otherwise
+ */
+export const isWithinResubmissionDeadline = (
+  application: Application | null
+): boolean => {
+  if (!application) return false;
+  // If no deadline set (backward compatibility), allow resubmission
+  if (!application.resubmissionDeadline) return true;
+  
+  return !isResubmissionDeadlinePassed(application);
+};
+
+/**
+ * Checks if an application can be resubmitted based on rejection count AND deadline
  * @param application The application to check
  * @returns true if resubmission is allowed, false otherwise
  */
@@ -116,9 +160,14 @@ export const canResubmitApplication = (
   if (!application) return false;
   if (application.status !== ApplicationStatus.REJECTED) return false;
 
-  // Allow resubmission only if rejectionCount < 2
+  // Check rejection count limit (must be < 2)
   const rejectionCount = application.rejectionCount || 0;
-  return rejectionCount < 2;
+  if (rejectionCount >= 2) return false;
+  
+  // Check if within 3 working day deadline
+  if (!isWithinResubmissionDeadline(application)) return false;
+  
+  return true;
 };
 
 /**
@@ -150,15 +199,29 @@ export const isSecondRejection = (application: Application | null): boolean => {
 /**
  * Gets the appropriate error message for blocked resubmission
  * @param isCompanyMember Whether this is a company member application
+ * @param isDeadlineExpired Whether the 3 working day deadline has passed
  * @returns The error message string
  */
 export const getResubmissionBlockedMessage = (
-  isCompanyMember: boolean = false
+  isCompanyMember: boolean = false,
+  isDeadlineExpired: boolean = false
 ): string => {
   const applicationType = isCompanyMember
     ? "company member application"
     : "individual application";
 
+  // Deadline expired message
+  if (isDeadlineExpired) {
+    return (
+      `Application Rejected - Resubmission Period Expired. ` +
+      `The 3 working day window for resubmitting your application has passed. ` +
+      `After your first rejection, you had 3 working days (excluding weekends) to resubmit your corrected documents. ` +
+      `Unfortunately, this deadline has now expired and resubmission is no longer available for this ${applicationType}. ` +
+      `Please contact the Rwanda Revenue Authority for assistance with starting a new application.`
+    );
+  }
+
+  // Rejection count limit message
   return (
     `Application Rejected - Resubmission Not Available. ` +
     `Your application has been rejected for the second time. ` +

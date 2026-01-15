@@ -100,6 +100,21 @@ public class TaxProfessionalServiceImpl implements TaxProfessionalService {
             + "You have already used your one-time resubmission opportunity after the first rejection. "
             + "Unfortunately, no further resubmissions are allowed for this company member application. "
             + "Please contact the Rwanda Revenue Authority for guidance on how to proceed with a new application.";
+    
+    // ==================== RESUBMISSION DEADLINE EXPIRED ERROR MESSAGES ====================
+    private static final String RESUBMISSION_DEADLINE_EXPIRED_INDIVIDUAL
+            = "Application Rejected - Resubmission Period Expired. "
+            + "The 3 working day window for resubmitting your application has passed. "
+            + "After your first rejection, you had 3 working days (excluding weekends) to resubmit your corrected documents. "
+            + "Unfortunately, this deadline has now expired and resubmission is no longer available for this individual application. "
+            + "Please contact the Rwanda Revenue Authority for assistance with starting a new application.";
+
+    private static final String RESUBMISSION_DEADLINE_EXPIRED_COMPANY_MEMBER
+            = "Application Rejected - Resubmission Period Expired. "
+            + "The 3 working day window for resubmitting your application has passed. "
+            + "After your first rejection, you had 3 working days (excluding weekends) to resubmit your corrected documents. "
+            + "Unfortunately, this deadline has now expired and resubmission is no longer available for this company member application. "
+            + "Please contact the Rwanda Revenue Authority for assistance with starting a new application.";
     // ============================================================================
 
     @Override
@@ -716,6 +731,11 @@ public class TaxProfessionalServiceImpl implements TaxProfessionalService {
         // NOT just because they've been rejected (rejectionCount > 0)
         Boolean hasReapplied = (tp.getIsReapplication() != null && tp.getIsReapplication());
         response.setHasReapplied(hasReapplied);
+        
+        // ==================== RESUBMISSION DEADLINE FIELDS ====================
+        response.setFirstRejectionDate(tp.getFirstRejectionDate());
+        response.setResubmissionDeadline(tp.calculateResubmissionDeadline());
+        // ======================================================================
         // ==============================================================
 
         // ==================== DOCUMENT REJECTION FIELDS ====================
@@ -792,6 +812,16 @@ public class TaxProfessionalServiceImpl implements TaxProfessionalService {
      * @return the appropriate error message
      */
     private String getResubmissionLimitErrorMessage(TaxProfessional taxProfessional) {
+        // Check if deadline has passed (first priority)
+        if (taxProfessional.isResubmissionDeadlinePassed()) {
+            if (taxProfessional.isIndividualApplication()) {
+                return RESUBMISSION_DEADLINE_EXPIRED_INDIVIDUAL;
+            } else {
+                return RESUBMISSION_DEADLINE_EXPIRED_COMPANY_MEMBER;
+            }
+        }
+        
+        // Otherwise, it's because of rejection count limit
         if (taxProfessional.isIndividualApplication()) {
             return RESUBMISSION_LIMIT_ERROR_INDIVIDUAL;
         } else {

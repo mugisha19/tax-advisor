@@ -69,16 +69,41 @@ public class DocumentServiceImpl implements DocumentService {
             + "You have already used your one-time resubmission opportunity after the first rejection. "
             + "Unfortunately, no further resubmissions are allowed for this company member application. "
             + "Please contact the Rwanda Revenue Authority for guidance on how to proceed with a new application.";
+    
+    // ==================== RESUBMISSION DEADLINE EXPIRED ERROR MESSAGES ====================
+    private static final String RESUBMISSION_DEADLINE_EXPIRED_INDIVIDUAL
+            = "Application Rejected - Resubmission Period Expired. "
+            + "The 3 working day window for resubmitting your application has passed. "
+            + "After your first rejection, you had 3 working days (excluding weekends) to resubmit your corrected documents. "
+            + "Unfortunately, this deadline has now expired and resubmission is no longer available for this individual application. "
+            + "Please contact the Rwanda Revenue Authority for assistance with starting a new application.";
+
+    private static final String RESUBMISSION_DEADLINE_EXPIRED_COMPANY_MEMBER
+            = "Application Rejected - Resubmission Period Expired. "
+            + "The 3 working day window for resubmitting your application has passed. "
+            + "After your first rejection, you had 3 working days (excluding weekends) to resubmit your corrected documents. "
+            + "Unfortunately, this deadline has now expired and resubmission is no longer available for this company member application. "
+            + "Please contact the Rwanda Revenue Authority for assistance with starting a new application.";
     // ============================================================================
 
     /**
      * Gets the appropriate resubmission limit error message based on
-     * application type
+     * application type and reason for blocking
      *
      * @param taxProfessional the tax professional entity
      * @return the appropriate error message
      */
     private String getResubmissionLimitErrorMessage(TaxProfessional taxProfessional) {
+        // Check if deadline has passed (first priority)
+        if (taxProfessional.isResubmissionDeadlinePassed()) {
+            if (taxProfessional.isIndividualApplication()) {
+                return RESUBMISSION_DEADLINE_EXPIRED_INDIVIDUAL;
+            } else {
+                return RESUBMISSION_DEADLINE_EXPIRED_COMPANY_MEMBER;
+            }
+        }
+        
+        // Otherwise, it's because of rejection count limit
         if (taxProfessional.isIndividualApplication()) {
             return RESUBMISSION_LIMIT_ERROR_INDIVIDUAL;
         } else {

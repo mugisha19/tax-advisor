@@ -34,6 +34,7 @@ import {
   ApplicationStatus,
   canResubmitApplication,
   getResubmissionBlockedMessage,
+  isResubmissionDeadlinePassed,
 } from "../types/application";
 import { AccountType } from "../types/company";
 import type { Document as DocumentType } from "../types/document";
@@ -173,7 +174,9 @@ export default function ApplicantDashboard() {
 
     // Check if resubmission is allowed
     if (!canResubmitApplication(application)) {
-      showToast(getResubmissionBlockedMessage(false), "error");
+      const isCompanyMember = !!application.tinCompany;
+      const deadlineExpired = isResubmissionDeadlinePassed(application);
+      showToast(getResubmissionBlockedMessage(isCompanyMember, deadlineExpired), "error");
       return;
     }
 
@@ -319,6 +322,15 @@ export default function ApplicantDashboard() {
       );
       return;
     }
+    
+    // Block updates if 3 working day deadline has passed
+    if (isFirstRejectionLocal() && isResubmissionDeadlinePassed(application)) {
+      showToast(
+        "Document updates are not allowed. The 3 working day resubmission period has expired. Please contact RRA for assistance with starting a new application.",
+        "error"
+      );
+      return;
+    }
     // ====================================================================
 
     const confirmed = window.confirm(
@@ -455,6 +467,30 @@ export default function ApplicantDashboard() {
     return rejectionCount >= 2;
   };
 
+  // Check if first rejection but deadline has passed
+  const isDeadlineExpiredLocal = (): boolean => {
+    if (!application) return false;
+    if (application.status !== ApplicationStatus.REJECTED) return false;
+    const rejectionCount = application.rejectionCount ?? 0;
+    // Only applies to first rejection
+    if (rejectionCount !== 1) return false;
+    return isResubmissionDeadlinePassed(application);
+  };
+
+  // Format the resubmission deadline for display
+  const formatDeadline = (): string => {
+    if (!application?.resubmissionDeadline) return "";
+    const deadline = new Date(application.resubmissionDeadline);
+    return deadline.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   // Check if document updates are allowed
   const canUpdateDocuments = (): boolean => {
     if (!application) return false;
@@ -467,9 +503,15 @@ export default function ApplicantDashboard() {
       return true;
     }
 
-    // Allow updates only for first rejection (using local check)
+    // Allow updates only for first rejection AND within 3 working day deadline
     if (application.status === ApplicationStatus.REJECTED) {
-      return isFirstRejectionLocal();
+      // Must be first rejection
+      if (!isFirstRejectionLocal()) return false;
+      
+      // Must be within resubmission deadline
+      if (isResubmissionDeadlinePassed(application)) return false;
+      
+      return true;
     }
 
     return false;
@@ -505,9 +547,11 @@ export default function ApplicantDashboard() {
     return updatedDocumentIds.has(docId);
   };
 
-  // Check if user can resubmit (first rejection AND has updated at least one problematic doc)
+  // Check if user can resubmit (first rejection AND within deadline AND has updated at least one problematic doc)
   const canShowResubmitButton = (): boolean => {
     if (!isFirstRejectionLocal()) return false;
+    // Must be within 3 working day deadline
+    if (isDeadlineExpiredLocal()) return false;
     // Show resubmit button if there are no problematic docs OR if at least one has been updated
     if (!hasProblematicDocuments()) return true;
     return updatedDocumentIds.size > 0;
@@ -934,10 +978,64 @@ export default function ApplicantDashboard() {
                           </button>
                         </div>
                       </>
+                    ) : isDeadlineExpiredLocal() ? (
+                      /* ==================== FIRST REJECTION - DEADLINE EXPIRED ==================== */
+                      <>
+                        {/* Deadline Expired Banner */}
+                        <div className="bg-red-50 border border-red-300 rounded-lg p-4">
+                          <div className="flex items-start space-x-3">
+                            <XCircle className="h-6 w-6 text-red-600 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <h4 className="text-base font-bold text-red-800 mb-2">
+                                Resubmission Period Expired
+                              </h4>
+                              <p className="text-sm text-red-700 mb-2">
+                                The <strong>3 working day</strong> window for resubmitting your 
+                                application has passed. Your deadline was{" "}
+                                <strong>{formatDeadline()}</strong>.
+                              </p>
+                              <p className="text-sm text-red-700 mb-2">
+                                After your first rejection, you had 3 working days 
+                                (excluding weekends) to resubmit your corrected documents.
+                              </p>
+                              <p className="text-sm text-red-700">
+                                Unfortunately, this deadline has now expired and 
+                                resubmission is no longer available. Please contact 
+                                the Rwanda Revenue Authority for assistance with 
+                                starting a new application.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Only Download Rejection Letter Button */}
+                        <div className="flex justify-center">
+                          <button
+                            onClick={handleDownloadCertificate}
+                            disabled={downloadingCertificate}
+                            className="flex items-center justify-center space-x-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-semibold px-6 py-3 rounded-lg transition duration-200 shadow-md"
+                          >
+                            {downloadingCertificate ? (
+                              <>
+                                <LoadingSpinner
+                                  size="sm"
+                                  className="text-white"
+                                />
+                                <span>Downloading...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Download size={20} />
+                                <span>Download Rejection Letter</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </>
                     ) : (
                       /* ==================== FIRST REJECTION - CAN RESUBMIT ==================== */
                       <>
-                        {/* First Rejection Warning Banner */}
+                        {/* First Rejection Warning Banner with Deadline */}
                         <div className="bg-orange-50 border border-orange-300 rounded-lg p-4">
                           <div className="flex items-start space-x-3">
                             <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5 flex-shrink-0" />
@@ -945,13 +1043,19 @@ export default function ApplicantDashboard() {
                               <h4 className="text-sm font-bold text-orange-800 mb-2">
                                 ⚠️ Important: One Resubmission Opportunity
                               </h4>
-                              <p className="text-sm text-orange-700">
+                              <p className="text-sm text-orange-700 mb-2">
                                 You have <strong>ONE</strong> resubmission
                                 opportunity. If your application is rejected
                                 again after resubmission, no further
                                 resubmissions will be allowed and you will need
                                 to contact RRA for guidance.
                               </p>
+                              {application?.resubmissionDeadline && (
+                                <p className="text-sm text-orange-800 font-semibold">
+                                  ⏰ Deadline: You must resubmit by{" "}
+                                  <strong>{formatDeadline()}</strong> (3 working days from rejection).
+                                </p>
+                              )}
                             </div>
                           </div>
                         </div>

@@ -440,6 +440,11 @@ public class CompanyServiceImpl implements CompanyService {
         // NOT just because they've been rejected (rejectionCount > 0)
         Boolean hasReapplied = (tp.getIsReapplication() != null && tp.getIsReapplication());
         response.setHasReapplied(hasReapplied);
+        
+        // ==================== RESUBMISSION DEADLINE FIELDS ====================
+        response.setFirstRejectionDate(tp.getFirstRejectionDate());
+        response.setResubmissionDeadline(tp.calculateResubmissionDeadline());
+        // ======================================================================
 
         // ==================== DOCUMENT REJECTION FIELDS ====================
         // Populate problematicDocumentIds when status is REJECTED
