@@ -397,7 +397,7 @@ export default function CompanyDashboard() {
                 ) : (
                   <div className="flex items-center space-x-2 bg-white/20 text-white/80 font-medium px-4 py-2 rounded-lg">
                     <Lock size={16} />
-                    <span className="text-sm hidden sm:inline">Adding members paused</span>
+                    <span className="text-sm hidden sm:inline">Temporarily paused</span>
                   </div>
                 )}
               </div>
@@ -514,7 +514,13 @@ export default function CompanyDashboard() {
                                       />
                                     </button>
                                   ) : (
-                                    <span className="text-xs text-amber-600 font-medium">Paused</span>
+                                    <button
+                                      disabled
+                                      className="p-2.5 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed"
+                                      title="Upload temporarily unavailable"
+                                    >
+                                      <Eye size={16} />
+                                    </button>
                                   )
                                 ) : (
                                   <button
