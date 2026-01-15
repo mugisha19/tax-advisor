@@ -246,7 +246,16 @@ public class AdminController {
             Files.createDirectories(certificatePath);
 
             // Save the PDF
-            String filename = "approval_certificate.pdf";
+            // For company members, include their TPIN in the filename to distinguish between members
+            String filename;
+            if (taxProfessional.getCompanyId() != null && taxProfessional.getTinCompany() != null) {
+                // Company member - include TPIN in filename
+                filename = tpin + "_approval_certificate.pdf";
+                log.info("📁 Using member-specific filename: {} for company member TPIN: {}", filename, tpin);
+            } else {
+                // Individual - use standard filename
+                filename = "approval_certificate.pdf";
+            }
             Path targetLocation = certificatePath.resolve(filename);
             Files.write(targetLocation, pdfDocument);
 

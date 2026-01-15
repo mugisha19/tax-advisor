@@ -215,9 +215,20 @@ public class OfficerController {
             Files.createDirectories(certificatePath);
             
             // Save file
-            String filename = taxProfessional.getStatus() == ApplicationStatus.APPROVED 
-                    ? "approval_certificate.pdf" 
-                    : "rejection_letter.pdf";
+            // For company members, include their TPIN in the filename to distinguish between members
+            String filename;
+            if (taxProfessional.getCompanyId() != null && taxProfessional.getTinCompany() != null) {
+                // Company member - include TPIN in filename
+                filename = taxProfessional.getStatus() == ApplicationStatus.APPROVED 
+                        ? tpin + "_approval_certificate.pdf" 
+                        : tpin + "_rejection_letter.pdf";
+                log.info("📁 Using member-specific filename: {} for company member TPIN: {}", filename, tpin);
+            } else {
+                // Individual - use standard filename
+                filename = taxProfessional.getStatus() == ApplicationStatus.APPROVED 
+                        ? "approval_certificate.pdf" 
+                        : "rejection_letter.pdf";
+            }
             Path targetLocation = certificatePath.resolve(filename);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
             

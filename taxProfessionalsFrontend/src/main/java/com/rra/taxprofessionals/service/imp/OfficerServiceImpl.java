@@ -804,7 +804,19 @@ public class OfficerServiceImpl implements OfficerService {
             Files.createDirectories(certificatePath);
 
             // Generate filename based on approval/rejection
-            String filename = isApproval ? "approval_certificate.pdf" : "rejection_letter.pdf";
+            // For company members, include their TPIN in the filename to distinguish between members
+            String filename;
+            if (taxProfessional.getCompanyId() != null && taxProfessional.getTinCompany() != null) {
+                // Company member - include TPIN in filename
+                String memberTpin = taxProfessional.getTpin();
+                filename = isApproval 
+                    ? memberTpin + "_approval_certificate.pdf" 
+                    : memberTpin + "_rejection_letter.pdf";
+                log.info("📁 Using member-specific filename: {} for company member TPIN: {}", filename, memberTpin);
+            } else {
+                // Individual - use standard filename
+                filename = isApproval ? "approval_certificate.pdf" : "rejection_letter.pdf";
+            }
             Path targetLocation = certificatePath.resolve(filename);
 
             // Save PDF bytes to file

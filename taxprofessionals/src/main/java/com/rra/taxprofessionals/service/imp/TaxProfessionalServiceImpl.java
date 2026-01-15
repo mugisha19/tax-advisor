@@ -273,16 +273,22 @@ public class TaxProfessionalServiceImpl implements TaxProfessionalService {
             // Determine expected certificate path
             String certificatePath = taxProfessional.getCertificateFilePath();
             boolean isApproval = taxProfessional.getStatus() == ApplicationStatus.APPROVED;
-            String expectedFilename = isApproval ? "approval_certificate.pdf" : "rejection_letter.pdf";
-
-            // Determine folder identifier: use company TIN for company members, TPIN for individuals
+            
+            // Determine folder identifier and filename
+            // For company members, use company TIN for folder but include member TPIN in filename
             String folderIdentifier;
+            String expectedFilename;
             if (taxProfessional.getCompanyId() != null && taxProfessional.getTinCompany() != null) {
                 folderIdentifier = taxProfessional.getTinCompany();
-                log.debug("📁 Using company TIN {} for certificate lookup (member TPIN: {})",
-                        folderIdentifier, tpin);
+                // Company member - include TPIN in filename
+                expectedFilename = isApproval 
+                    ? tpin + "_approval_certificate.pdf" 
+                    : tpin + "_rejection_letter.pdf";
+                log.debug("📁 Using company TIN {} for certificate lookup, member-specific filename: {} (member TPIN: {})",
+                        folderIdentifier, expectedFilename, tpin);
             } else {
                 folderIdentifier = tpin;
+                expectedFilename = isApproval ? "approval_certificate.pdf" : "rejection_letter.pdf";
             }
 
             // If no path stored, construct the expected path
@@ -369,16 +375,22 @@ public class TaxProfessionalServiceImpl implements TaxProfessionalService {
             // Determine expected certificate path
             String certificatePath = taxProfessional.getCertificateFilePath();
             boolean isApproval = taxProfessional.getStatus() == ApplicationStatus.APPROVED;
-            String expectedFilename = isApproval ? "approval_certificate.pdf" : "rejection_letter.pdf";
-
-            // Determine folder identifier: use company TIN for company members, TPIN for individuals
+            
+            // Determine folder identifier and filename
+            // For company members, use company TIN for folder but include member TPIN in filename
             String folderIdentifier;
+            String expectedFilename;
             if (taxProfessional.getCompanyId() != null && taxProfessional.getTinCompany() != null) {
                 folderIdentifier = taxProfessional.getTinCompany();
-                log.debug("📁 Using company TIN {} for certificate lookup (member TPIN: {})",
-                        folderIdentifier, tpin);
+                // Company member - include TPIN in filename
+                expectedFilename = isApproval 
+                    ? tpin + "_approval_certificate.pdf" 
+                    : tpin + "_rejection_letter.pdf";
+                log.debug("📁 Using company TIN {} for certificate lookup, member-specific filename: {} (member TPIN: {})",
+                        folderIdentifier, expectedFilename, tpin);
             } else {
                 folderIdentifier = tpin;
+                expectedFilename = isApproval ? "approval_certificate.pdf" : "rejection_letter.pdf";
             }
 
             // If no path stored, construct the expected path
