@@ -281,9 +281,6 @@ const SignUpPage: React.FC = () => {
               We apologize for the inconvenience. The Tax Professional Management System is 
               currently <strong>temporarily closed</strong> for new registrations.
             </p>
-            <p className="text-gray-700 text-center leading-relaxed mt-3">
-              Please check back later as registrations may reopen soon.
-            </p>
           </div>
 
           {/* Already have account section */}
