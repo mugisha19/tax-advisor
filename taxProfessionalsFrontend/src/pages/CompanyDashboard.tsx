@@ -14,11 +14,13 @@ import {
   Eye,
   Edit,
   Trash2,
+  Lock,
 } from "lucide-react";
 import rra from "../imgs/rra.png";
 import { getCurrentUser } from "../services/getCurrentUser";
 import { getCompanyMembers } from "../services/getCompanyMembers";
 import { deleteCompanyMember } from "../services/deleteCompanyMember";
+import { useSystemLock } from "../components/SystemLockContext";
 import type { CompanyAccount, CompanyMember } from "../types/company";
 import { AccountType } from "../types/company";
 import { ApplicationStatus } from "../types/application";
@@ -35,6 +37,7 @@ interface ToastState {
 }
 
 export default function CompanyDashboard() {
+  const { isSystemLocked } = useSystemLock();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [companyAccount, setCompanyAccount] = useState<CompanyAccount | null>(
     null
@@ -383,13 +386,20 @@ export default function CompanyDashboard() {
                     {members.length === 1 ? "member" : "members"} registered
                   </p>
                 </div>
-                <button
-                  onClick={handleAddMember}
-                  className="flex items-center space-x-2 bg-white hover:bg-gray-50 text-blue-600 font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl active:scale-95"
-                >
-                  <Plus size={20} />
-                  <span className="hidden sm:inline">Add Member</span>
-                </button>
+                {!isSystemLocked ? (
+                  <button
+                    onClick={handleAddMember}
+                    className="flex items-center space-x-2 bg-white hover:bg-gray-50 text-blue-600 font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl active:scale-95"
+                  >
+                    <Plus size={20} />
+                    <span className="hidden sm:inline">Add Member</span>
+                  </button>
+                ) : (
+                  <div className="flex items-center space-x-2 bg-white/20 text-white/80 font-medium px-4 py-2 rounded-lg">
+                    <Lock size={16} />
+                    <span className="text-sm hidden sm:inline">Adding members paused</span>
+                  </div>
+                )}
               </div>
 
               <div className="p-6">
@@ -405,13 +415,26 @@ export default function CompanyDashboard() {
                       Start building your team by adding your first company
                       member
                     </p>
-                    <button
-                      onClick={handleAddMember}
-                      className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl active:scale-95"
-                    >
-                      <Plus size={20} />
-                      <span>Add First Member</span>
-                    </button>
+                    {!isSystemLocked ? (
+                      <button
+                        onClick={handleAddMember}
+                        className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl active:scale-95"
+                      >
+                        <Plus size={20} />
+                        <span>Add First Member</span>
+                      </button>
+                    ) : (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 max-w-md mx-auto">
+                        <div className="flex items-center justify-center gap-2 text-amber-700 mb-2">
+                          <Lock className="h-5 w-5" />
+                          <span className="font-medium">Member Management Paused</span>
+                        </div>
+                        <p className="text-sm text-amber-600 text-center">
+                          Adding new members is temporarily unavailable. 
+                          Please check back later or contact RRA for assistance.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="overflow-x-auto rounded-xl border border-gray-200">
@@ -477,18 +500,22 @@ export default function CompanyDashboard() {
                                 className="flex items-center justify-center gap-2"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                {/* Show upload button when status is REGISTERED (no documents submitted yet) */}
+                                {/* Show upload button when status is REGISTERED (no documents submitted yet) and system not locked */}
                                 {(!member.status || member.status === ApplicationStatus.REGISTERED) ? (
-                                  <button
-                                    onClick={() => handleUploadForMember(member)}
-                                    className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 group"
-                                    title="Upload documents for this member"
-                                  >
-                                    <Upload
-                                      size={16}
-                                      className="group-hover:scale-110 transition-transform"
-                                    />
-                                  </button>
+                                  !isSystemLocked ? (
+                                    <button
+                                      onClick={() => handleUploadForMember(member)}
+                                      className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 group"
+                                      title="Upload documents for this member"
+                                    >
+                                      <Upload
+                                        size={16}
+                                        className="group-hover:scale-110 transition-transform"
+                                      />
+                                    </button>
+                                  ) : (
+                                    <span className="text-xs text-amber-600 font-medium">Paused</span>
+                                  )
                                 ) : (
                                   <button
                                     onClick={() => setSelectedMemberForDetails(member)}
@@ -502,29 +529,33 @@ export default function CompanyDashboard() {
                                   </button>
                                 )}
                                 
-                                {/* Edit button */}
-                                <button
-                                  onClick={() => handleEditMember(member)}
-                                  className="p-2.5 bg-gradient-to-br from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 group"
-                                  title="Edit member"
-                                >
-                                  <Edit
-                                    size={16}
-                                    className="group-hover:scale-110 transition-transform"
-                                  />
-                                </button>
+                                {/* Edit button - disabled when system locked */}
+                                {!isSystemLocked && (
+                                  <button
+                                    onClick={() => handleEditMember(member)}
+                                    className="p-2.5 bg-gradient-to-br from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 group"
+                                    title="Edit member"
+                                  >
+                                    <Edit
+                                      size={16}
+                                      className="group-hover:scale-110 transition-transform"
+                                    />
+                                  </button>
+                                )}
 
-                                {/* Delete button */}
-                                <button
-                                  onClick={() => handleDeleteMember(member)}
-                                  className="p-2.5 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 group"
-                                  title="Delete member"
-                                >
-                                  <Trash2
-                                    size={16}
-                                    className="group-hover:scale-110 transition-transform"
-                                  />
-                                </button>
+                                {/* Delete button - disabled when system locked */}
+                                {!isSystemLocked && (
+                                  <button
+                                    onClick={() => handleDeleteMember(member)}
+                                    className="p-2.5 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 group"
+                                    title="Delete member"
+                                  >
+                                    <Trash2
+                                      size={16}
+                                      className="group-hover:scale-110 transition-transform"
+                                    />
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>

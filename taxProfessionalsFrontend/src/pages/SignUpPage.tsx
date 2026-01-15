@@ -8,6 +8,7 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 import { MdBusiness } from "react-icons/md";
+import { Lock, Phone, Mail, ArrowLeft } from "lucide-react";
 import rra from "../imgs/rra.png";
 import { useNavigate } from "react-router-dom";
 import ApplicantForm from "../components/ApplicantForm";
@@ -16,8 +17,10 @@ import { addApplicant } from "../services/SignUp";
 import { addCompany } from "../services/CompanyRegister";
 import { validateTin } from "../services/ValidateTin";
 import { sendPasswordEmail } from "../services/SendPasswordEmail";
+import { useSystemLock } from "../components/SystemLockContext";
 
 const SignUpPage: React.FC = () => {
+  const { isSystemLocked, loading: systemLockLoading } = useSystemLock();
 
   // Step management
   const [accountType, setAccountType] = useState("");
@@ -233,6 +236,102 @@ const SignUpPage: React.FC = () => {
       <Errors message={errors[errorKey]} />
     </div>
   );
+
+  // Show loading spinner while checking system lock status
+  if (systemLockLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show system locked message if the system is locked
+  if (isSystemLocked) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-10">
+        <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg bg-white p-6 sm:p-8 lg:p-10 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl">
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <img
+              src={rra}
+              alt="RRA Logo"
+              className="h-20 sm:h-24 lg:h-28 object-contain"
+            />
+          </div>
+
+          {/* Lock Icon */}
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
+              <Lock className="w-10 h-10 text-red-600" />
+            </div>
+          </div>
+
+          {/* Title */}
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 text-center mb-4">
+            Registration Currently Unavailable
+          </h2>
+
+          {/* Message */}
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+            <p className="text-gray-700 text-center leading-relaxed">
+              We apologize for the inconvenience. The Tax Professional Management System is 
+              currently <strong>temporarily closed</strong> for new registrations.
+            </p>
+            <p className="text-gray-700 text-center leading-relaxed mt-3">
+              Please check back later as registrations may reopen soon.
+            </p>
+          </div>
+
+          {/* Already have account section */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <p className="text-gray-700 text-center font-medium mb-2">
+              Already have an account?
+            </p>
+            <p className="text-gray-600 text-center text-sm">
+              If you have already created an account, you can still log in 
+              to track your application status.
+            </p>
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={() => navigate("/")}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors duration-200"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Go to Login
+              </button>
+            </div>
+          </div>
+
+          {/* Contact RRA */}
+          <div className="border-t pt-6">
+            <p className="text-gray-600 text-center text-sm mb-3">
+              Need assistance? Contact Rwanda Revenue Authority:
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4 text-sm">
+              <a
+                href="tel:3004"
+                className="flex items-center justify-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
+              >
+                <Phone className="w-4 h-4" />
+                <span>Call: 3004</span>
+              </a>
+              <a
+                href="mailto:info@rra.gov.rw"
+                className="flex items-center justify-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
+              >
+                <Mail className="w-4 h-4" />
+                <span>info@rra.gov.rw</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-10">

@@ -832,10 +832,11 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                       </button>
                     )}
 
-                    {/* Update Documents button - FIRST REJECTION with problematic docs */}
+                    {/* Update Documents button - FIRST REJECTION with problematic docs and deadline not expired */}
                     {isFirstRejection &&
                       hasProblematicDocuments &&
-                      !allProblematicDocsUpdatedLocally && (
+                      !allProblematicDocsUpdatedLocally &&
+                      !isDeadlineExpired && (
                         <button
                           onClick={() => {
                             // Scroll to documents section

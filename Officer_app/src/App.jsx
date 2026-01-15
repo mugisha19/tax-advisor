@@ -9,6 +9,7 @@ import Login from "./Officer/Login";
 import SetPassword from "./Officer/SetPassword";
 import ProtectedRoute from "./Officer/ProtectedRoute";
 import UserManagement from "./Officer/UserManagement";
+import SystemSettings from "./Officer/SystemSettings";
 
 function App() {
   return (
@@ -42,6 +43,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["ADMIN"]}>
                 <UserManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/system-settings"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <SystemSettings />
               </ProtectedRoute>
             }
           />

@@ -11,6 +11,7 @@ import {
   FaChevronRight,
   FaTachometerAlt,
   FaUsersCog,
+  FaCog,
 } from "react-icons/fa";
 import Logo from "../assets/rra.jpg";
 
@@ -70,6 +71,12 @@ const Sidebar = () => {
       name: "User Management",
       icon: FaUsersCog,
       path: "/user-management",
+      roles: ["ADMIN"],
+    },
+    {
+      name: "System Settings",
+      icon: FaCog,
+      path: "/system-settings",
       roles: ["ADMIN"],
     },
   ];

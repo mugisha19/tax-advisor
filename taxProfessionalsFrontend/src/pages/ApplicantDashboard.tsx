@@ -19,6 +19,7 @@ import {
   Calendar,
   AlertTriangle,
   Upload,
+  Lock,
 } from "lucide-react";
 import rra from "../imgs/rra.png";
 import { getCurrentUser } from "../services/getCurrentUser";
@@ -27,6 +28,7 @@ import { downloadCertificate } from "../services/downloadCertificate";
 import { viewDocument } from "../services/viewDocument";
 import { updateDocument } from "../services/updateDocument";
 import { resubmitApplication } from "../services/resubmitApplication";
+import { useSystemLock } from "../components/SystemLockContext";
 
 // ✅ FIX: Use type-only imports
 import type { Application } from "../types/application";
@@ -55,6 +57,7 @@ interface ToastState {
 }
 
 export default function ApplicantDashboard() {
+  const { isSystemLocked } = useSystemLock();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [application, setApplication] = useState<Application | null>(null);
   const [documents, setDocuments] = useState<DocumentType[]>([]);
@@ -647,7 +650,7 @@ export default function ApplicantDashboard() {
               <span>Profile</span>
             </button>
 
-            {canUploadDocuments && (
+            {canUploadDocuments && !isSystemLocked && (
               <button
                 onClick={() => navigate("/documents")}
                 className="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -824,7 +827,7 @@ export default function ApplicantDashboard() {
 
                 {/* Status-specific Messages and Actions */}
                 {application.status === ApplicationStatus.REGISTERED &&
-                  documents.length === 0 && (
+                  documents.length === 0 && !isSystemLocked && (
                     <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
                       <div className="flex items-start">
                         <Upload className="h-5 w-5 text-blue-500 mt-0.5 mr-3" />
@@ -832,6 +835,26 @@ export default function ApplicantDashboard() {
                           Your application is registered. Please upload all
                           required documents to proceed with your application.
                         </p>
+                      </div>
+                    </div>
+                  )}
+
+                {/* System Locked Message for REGISTERED users with no documents */}
+                {application.status === ApplicationStatus.REGISTERED &&
+                  documents.length === 0 && isSystemLocked && (
+                    <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg">
+                      <div className="flex items-start">
+                        <Lock className="h-5 w-5 text-amber-600 mt-0.5 mr-3" />
+                        <div>
+                          <p className="text-sm text-amber-800 font-medium">
+                            Application Submissions Temporarily Paused
+                          </p>
+                          <p className="text-sm text-amber-700 mt-1">
+                            Your account is registered, but new document submissions are 
+                            temporarily unavailable. Please check back later or contact 
+                            RRA for more information. We apologize for any inconvenience.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1161,13 +1184,25 @@ export default function ApplicantDashboard() {
                     <p className="text-gray-500 mb-4">
                       No documents uploaded yet.
                     </p>
-                    {canUploadDocuments && (
+                    {canUploadDocuments && !isSystemLocked && (
                       <button
                         onClick={() => navigate("/documents")}
                         className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition duration-200"
                       >
                         Apply Here
                       </button>
+                    )}
+                    {canUploadDocuments && isSystemLocked && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-4 max-w-md mx-auto">
+                        <div className="flex items-center justify-center gap-2 text-amber-700 mb-2">
+                          <Lock className="h-5 w-5" />
+                          <span className="font-medium">Applications Temporarily Paused</span>
+                        </div>
+                        <p className="text-sm text-amber-600 text-center">
+                          New applications are temporarily unavailable. Please check back later 
+                          or contact RRA for more information.
+                        </p>
+                      </div>
                     )}
                   </div>
                 ) : (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { MdCloudUpload } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, XCircle, Lock, Phone, Mail, ArrowLeft } from "lucide-react";
 import rra from "../imgs/rra.png";
 import Errors from "../components/Errors";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -9,6 +9,7 @@ import { uploadAllDocuments } from "../services/Upload";
 import { getCurrentUser } from "../services/getCurrentUser";
 import { getCompanyMembers } from "../services/getCompanyMembers";
 import { getDetails } from "../services/ViewApplicantDetails";
+import { useSystemLock } from "../components/SystemLockContext";
 import type { Application } from "../types/application";
 import {
   ApplicationStatus,
@@ -20,6 +21,7 @@ import type { CompanyAccount, CompanyMember } from "../types/company";
 
 const DocumentPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isSystemLocked, loading: systemLockLoading } = useSystemLock();
 
   const [signedLetter, setSignedLetter] = useState<File | null>(null);
   const [criminalRecord, setCriminalRecord] = useState<File | null>(null);
@@ -482,12 +484,84 @@ const DocumentPage: React.FC = () => {
   };
 
   // Show loading while checking status
-  if (checkingStatus) {
+  if (checkingStatus || systemLockLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
         <div className="bg-white shadow-lg rounded-xl p-8 max-w-md w-full text-center">
           <LoadingSpinner size="lg" className="mx-auto mb-4" />
           <p className="text-gray-600">Checking application status...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show system locked message when trying to access document upload
+  if (isSystemLocked) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-8">
+        <div className="bg-white shadow-lg rounded-xl p-8 max-w-lg w-full">
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <img src={rra} alt="RRA Logo" className="h-20 object-contain" />
+          </div>
+
+          {/* Lock Icon */}
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center">
+              <Lock className="w-10 h-10 text-amber-600" />
+            </div>
+          </div>
+
+          {/* Title */}
+          <h2 className="text-xl font-bold text-gray-800 text-center mb-4">
+            Document Uploads Temporarily Unavailable
+          </h2>
+
+          {/* Message */}
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+            <p className="text-gray-700 text-center leading-relaxed">
+              We apologize for the inconvenience. New application submissions are 
+              temporarily paused. Please check back later.
+            </p>
+            <p className="text-gray-600 text-center text-sm mt-3">
+              If you have already submitted documents, you can still view your 
+              application status on your dashboard.
+            </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors duration-200"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Return to Dashboard
+            </button>
+          </div>
+
+          {/* Contact RRA */}
+          <div className="border-t mt-6 pt-4">
+            <p className="text-gray-500 text-center text-sm mb-2">
+              Need assistance? Contact RRA:
+            </p>
+            <div className="flex justify-center gap-4 text-sm">
+              <a
+                href="tel:3004"
+                className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
+              >
+                <Phone className="w-4 h-4" />
+                <span>3004</span>
+              </a>
+              <a
+                href="mailto:info@rra.gov.rw"
+                className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
+              >
+                <Mail className="w-4 h-4" />
+                <span>info@rra.gov.rw</span>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     );

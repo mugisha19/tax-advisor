@@ -12,28 +12,31 @@ import AddMemberPage from "./pages/AddMemberPage";
 import EditMemberPage from "./pages/EditMemberPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import { SystemLockProvider } from "./components/SystemLockContext";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
+    <SystemLockProvider>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* Protected Routes */}
-        <Route path="/applicant" element={<ApplicantPage />} />
-        <Route path="/success" element={<SuccessfulPage />} />
-        <Route path="/dashboard" element={<ApplicantDashboard />} />
-        <Route path="/company-dashboard" element={<CompanyDashboard />} />
-        <Route path="/add-member" element={<AddMemberPage />} />
-        <Route path="/edit-member" element={<EditMemberPage />} />
-        <Route path="/documents" element={<DocumentPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-      </Routes>
-    </Router>
+          {/* Protected Routes */}
+          <Route path="/applicant" element={<ApplicantPage />} />
+          <Route path="/success" element={<SuccessfulPage />} />
+          <Route path="/dashboard" element={<ApplicantDashboard />} />
+          <Route path="/company-dashboard" element={<CompanyDashboard />} />
+          <Route path="/add-member" element={<AddMemberPage />} />
+          <Route path="/edit-member" element={<EditMemberPage />} />
+          <Route path="/documents" element={<DocumentPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+        </Routes>
+      </Router>
+    </SystemLockProvider>
   );
 }
 

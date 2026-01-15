@@ -109,6 +109,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/taxprofessionals/signup-type").permitAll()
                 // Public TIN validation endpoint (for registration)
                 .requestMatchers(HttpMethod.GET, "/api/taxprofessionals/v1/tp/suppliers_wsp/**").permitAll()
+                // Public system status endpoint (for checking lock state)
+                .requestMatchers(HttpMethod.GET, "/api/system/status").permitAll()
                 // Protected admin endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 // Protected officer endpoints

@@ -7,17 +7,20 @@ import {
   FaIdCard,
   FaArrowLeft,
 } from "react-icons/fa";
+import { Lock, Phone, Mail, ArrowLeft } from "lucide-react";
 import rra from "../imgs/rra.png";
 import ApplicantForm from "../components/ApplicantForm";
 import Errors from "../components/Errors";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { getCurrentUser } from "../services/getCurrentUser";
 import { addCompanyMember } from "../services/addCompanyMember";
+import { useSystemLock } from "../components/SystemLockContext";
 import type { CompanyAccount } from "../types/company";
 import { AccountType } from "../types/company";
 
 const AddMemberPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isSystemLocked, loading: systemLockLoading } = useSystemLock();
 
   const [nid, setNid] = useState("");
   const [fullName, setFullName] = useState("");
@@ -186,6 +189,48 @@ const AddMemberPage: React.FC = () => {
             className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl active:scale-95"
           >
             Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show system locked message
+  if (isSystemLocked) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center border border-gray-100">
+          <div className="bg-amber-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+            <Lock className="w-10 h-10 text-amber-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">
+            Adding Members Temporarily Unavailable
+          </h2>
+          <p className="text-gray-600 mb-6 leading-relaxed">
+            The system is currently undergoing maintenance. Adding new company members 
+            is temporarily paused. Please try again later or contact RRA for assistance.
+          </p>
+          
+          <div className="bg-gray-50 rounded-xl p-4 mb-6">
+            <p className="text-sm text-gray-500 mb-3">Need immediate assistance?</p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4 text-sm">
+              <div className="flex items-center justify-center gap-2 text-gray-600">
+                <Phone className="w-4 h-4 text-blue-600" />
+                <span>3004</span>
+              </div>
+              <div className="flex items-center justify-center gap-2 text-gray-600">
+                <Mail className="w-4 h-4 text-blue-600" />
+                <span>info@rra.gov.rw</span>
+              </div>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => navigate("/company-dashboard")}
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl active:scale-95"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Return to Dashboard
           </button>
         </div>
       </div>
