@@ -256,22 +256,24 @@ const OfficerDashboard = () => {
         problematicDocIds
       );
       if (!data.success) throw new Error(data.message);
-      // Step 2: Generate and upload certificate PDF for both APPROVED and REJECTED
+      
+      // Step 2: Get updated applicant data from backend response
+      // IMPORTANT: Backend has already updated rejectionCount, so we use response data
+      const updatedApplicantData = data.data;
+      
+      // Step 3: Generate and upload certificate PDF for both APPROVED and REJECTED
       if (action === "APPROVED") {
         try {
           setMessage("✅ Application approved! Generating certificate...");
 
-          // Find applicant data
-          const approvedApplicant =
-            applicants.find((a) => a.tpin === tpin) || selectedApplicant;
-
-          if (!approvedApplicant) {
-            throw new Error("Applicant data not found");
+          // Use updated data from backend response
+          if (!updatedApplicantData) {
+            throw new Error("Applicant data not found in response");
           }
 
           // Generate PDF
           const pdfBlob = await generateCertificatePDF(
-            approvedApplicant,
+            updatedApplicantData,
             "APPROVAL"
           );
 
@@ -291,24 +293,21 @@ const OfficerDashboard = () => {
         try {
           setMessage("📄 Generating rejection letter...");
 
-          // Find applicant data
-          const rejectedApplicant =
-            applicants.find((a) => a.tpin === tpin) || selectedApplicant;
-
-          if (!rejectedApplicant) {
-            throw new Error("Applicant data not found");
+          // Use updated data from backend response (with incremented rejectionCount)
+          if (!updatedApplicantData) {
+            throw new Error("Applicant data not found in response");
           }
 
           // Add problematic document IDs to applicant object if provided
           const applicantWithProblematicDocs = {
-            ...rejectedApplicant,
+            ...updatedApplicantData,
             problematicDocumentIds:
               problematicDocIds ||
-              rejectedApplicant.problematicDocumentIds ||
+              updatedApplicantData.problematicDocumentIds ||
               [],
           };
 
-          // Generate PDF with rejection reason
+          // Generate PDF with rejection reason and UPDATED rejectionCount
           const pdfBlob = await generateCertificatePDF(
             applicantWithProblematicDocs,
             "REJECTION",

@@ -809,11 +809,40 @@ public class OfficerServiceImpl implements OfficerService {
             }
 
             // Save the updated application status
-            // NOTE: PDF generation and email sending are now handled by frontend
-            // Frontend will generate the certificate and upload it via /api/officer/upload-certificate endpoint
             TaxProfessional updatedApplication = taxProfessionalRepository.save(taxProfessional);
             log.info("✅ Application status updated in database - TPIN: {}, Status: {}",
                     request.getTpin(), request.getStatus());
+
+            // ==================== AUTO-GENERATE REJECTION PDF ====================
+            // For rejections, automatically generate the rejection letter PDF with correct message
+            // This ensures taxprofessionals always get the correct rejection message when they download
+            if (request.getStatus() == ApplicationStatus.REJECTED) {
+                log.info("🔄 Auto-generating rejection letter PDF for TPIN: {} (rejectionCount: {})", 
+                        request.getTpin(), updatedApplication.getRejectionCount());
+                
+                try {
+                    // Generate rejection letter with current rejectionCount
+                    byte[] pdfBytes = certificatePdfService.generateRejectionLetter(
+                            updatedApplication, 
+                            officer, 
+                            request.getRejectionReason()
+                    );
+                    
+                    // Save the PDF to filesystem
+                    String certificatePath = saveCertificatePdf(pdfBytes, updatedApplication, false);
+                    updatedApplication.setCertificateFilePath(certificatePath);
+                    updatedApplication = taxProfessionalRepository.save(updatedApplication);
+                    
+                    log.info("✅ Rejection letter PDF auto-generated and saved for TPIN: {}", request.getTpin());
+                    
+                } catch (Exception e) {
+                    log.error("❌ Failed to auto-generate rejection letter PDF for TPIN {}: {}", 
+                            request.getTpin(), e.getMessage(), e);
+                    // Don't fail the whole operation if PDF generation fails
+                    // Officer can manually regenerate using frontend
+                }
+            }
+            // ====================================================================
 
             // Success - status updated, awaiting certificate upload from frontend
             log.info("🎉 Application review completed successfully - TPIN: {}, Status: {}",

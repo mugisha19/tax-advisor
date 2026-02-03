@@ -167,9 +167,16 @@ public class CertificatePdfServiceImpl implements CertificatePdfService {
             // APPLICANT DETAILS
             addApplicantDetailsFormatted(doc, app);
             int currentYear = LocalDateTime.now().getYear();
+            
+            // Check if this is a final rejection (second or more rejections)
+            boolean isFinalRejection = (app.getRejectionCount() != null && app.getRejectionCount() >= 2);
 
-            // SUBJECT
-            doc.add(new Paragraph("Re: Notification for the Approval of tax advisory application license")
+            // SUBJECT - Different based on rejection count
+            String subjectLine = isFinalRejection 
+                    ? "Re: Final Rejection of Tax advisory license application"
+                    : "Re: Rejection of Tax advisory license application";
+            
+            doc.add(new Paragraph(subjectLine)
                     .setBold()
                     .setFontSize(11)
                     .setMarginTop(8)
@@ -181,25 +188,43 @@ public class CertificatePdfServiceImpl implements CertificatePdfService {
                     + "001/RRA/25 of 03/10/2025 determining the requirements and functioning of Qualified "
                     + "Professional who represent taxpayer(s)."));
 
-            String appDate = app.getApplicationDate() != null ? app.getApplicationDate().format(DATE_FORMAT) : "_______________";
-            doc.add(bodyParagraph(
-                    "Following the application of the year " + currentYear + " for Tax Advisory License, submitted on "
-                    + appDate + ". The Tax Administration regrets to inform you that your application has been "
-                    + "rejected. This decision was made because the application did not meet the published eligibility requirements."));
+            // Different message based on rejection count
+            if (isFinalRejection) {
+                // FINAL REJECTION MESSAGE (Second rejection)
+                doc.add(bodyParagraph(
+                        "Following the review of your resubmitted application and accompanying documents, "
+                        + "we regret to inform you that your application for Tax Advisory License has been rejected."));
+                
+                doc.add(bodyParagraph(
+                        "If you have any question or need clarification regarding this decision, please do not "
+                        + "hesitate to contact the office of the Commissioner for Domestic Taxes Department."));
+            } else {
+                // FIRST REJECTION MESSAGE (Can reapply)
+                String appDate = app.getApplicationDate() != null ? app.getApplicationDate().format(DATE_FORMAT) : "_______________";
+                doc.add(bodyParagraph(
+                        "Following the review of your submitted application and accompanying documents, "
+                        + "we regret to inform you that your application for Tax Advisory License has been rejected."));
 
-            // REASONS SECTION
-            doc.add(new Paragraph("The reasons for disapproval are as follows:")
-                    .setBold()
-                    .setFontSize(10)
-                    .setMarginBottom(8));
+                // REASONS SECTION - only for first rejection
+                if (reason != null && !reason.trim().isEmpty()) {
+                    doc.add(new Paragraph("The reasons for disapproval are as follows:")
+                            .setBold()
+                            .setFontSize(10)
+                            .setMarginBottom(8));
 
-            // Format reasons as numbered list
-            addNumberedReasons(doc, reason);
+                    // Format reasons as numbered list
+                    addNumberedReasons(doc, reason);
+                }
 
-            // RESUBMISSION INFO
-            doc.add(bodyParagraph(
-                    "You may resubmit the missing requirement(s) as listed above within three working days so that "
-                    + "your application can be re-processed."));
+                // RESUBMISSION INFO - only for first rejection
+                doc.add(bodyParagraph(
+                        "You may resubmit your application after addressing any issues. We encourage you to "
+                        + "review the requirements and ensure all documents meet the specified criteria before reapplying."));
+                
+                doc.add(bodyParagraph(
+                        "If you have any questions or need clarification regarding this decision, please do not "
+                        + "hesitate to contact us."));
+            }
 
             // SIGNATURE SECTION
             addSignatureSection(doc);

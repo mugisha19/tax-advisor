@@ -18,6 +18,9 @@ const RejectionCertificate = forwardRef(({ applicant }, ref) => {
 
   const rejectionDate = applicant?.reviewedAt || new Date().toISOString();
   const currentYear = new Date().getFullYear();
+  
+  // Check if this is a final rejection (second rejection)
+  const isFinalRejection = (applicant?.rejectionCount || 0) >= 2;
 
   return (
     <Card
@@ -185,7 +188,9 @@ const RejectionCertificate = forwardRef(({ applicant }, ref) => {
                 mb: 2,
               }}
             >
-              Re: Rejection of Tax advisory license application
+              {isFinalRejection 
+                ? "Re: Final Rejection of Tax advisory license application"
+                : "Re: Rejection of Tax advisory license application"}
             </Typography>
           </Box>
 
@@ -195,7 +200,7 @@ const RejectionCertificate = forwardRef(({ applicant }, ref) => {
               sx={{
                 fontSize: "0.85rem",
                 color: "#000",
-                mb: 2,
+                mb: 3,
                 textAlign: "justify",
                 lineHeight: 1.6,
               }}
@@ -206,46 +211,80 @@ const RejectionCertificate = forwardRef(({ applicant }, ref) => {
               represent taxpayer(s).
             </Typography>
 
-            <Typography
-              sx={{
-                fontSize: "0.85rem",
-                color: "#000",
-                mb: 2,
-                textAlign: "justify",
-                lineHeight: 1.6,
-              }}
-            >
-              Following the review of your submitted application and
-              accompanying documents, we regret to inform you that your
-              application for Tax Advisory License has been rejected.
-            </Typography>
+            {isFinalRejection ? (
+              // FINAL REJECTION MESSAGE (Second rejection)
+              <>
+                <Typography
+                  sx={{
+                    fontSize: "0.85rem",
+                    color: "#000",
+                    mb: 3,
+                    textAlign: "justify",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Following the review of your resubmitted application and
+                  accompanying documents, we regret to inform you that your
+                  application for Tax Advisory License has been rejected.
+                </Typography>
 
-            <Typography
-              sx={{
-                fontSize: "0.85rem",
-                color: "#000",
-                mb: 2,
-                textAlign: "justify",
-                lineHeight: 1.6,
-                mt: 2,
-              }}
-            >
-              You may resubmit your application after addressing any issues. We
-              encourage you to review the requirements and ensure all documents
-              meet the specified criteria before reapplying.
-            </Typography>
+                <Typography
+                  sx={{
+                    fontSize: "0.85rem",
+                    color: "#000",
+                    textAlign: "justify",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  If you have any question or need clarification regarding this
+                  decision, please do not hesitate to contact the office of the
+                  Commissioner for Domestic Taxes Department.
+                </Typography>
+              </>
+            ) : (
+              // FIRST REJECTION MESSAGE (Can reapply)
+              <>
+                <Typography
+                  sx={{
+                    fontSize: "0.85rem",
+                    color: "#000",
+                    mb: 3,
+                    textAlign: "justify",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Following the review of your submitted application and
+                  accompanying documents, we regret to inform you that your
+                  application for Tax Advisory License has been rejected.
+                </Typography>
 
-            <Typography
-              sx={{
-                fontSize: "0.85rem",
-                color: "#000",
-                textAlign: "justify",
-                lineHeight: 1.6,
-              }}
-            >
-              If you have any questions or need clarification regarding this
-              decision, please do not hesitate to contact us.
-            </Typography>
+                <Typography
+                  sx={{
+                    fontSize: "0.85rem",
+                    color: "#000",
+                    mb: 3,
+                    textAlign: "justify",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  You may resubmit your application after addressing any issues. We
+                  encourage you to review the requirements and ensure all documents
+                  meet the specified criteria before reapplying.
+                </Typography>
+
+                <Typography
+                  sx={{
+                    fontSize: "0.85rem",
+                    color: "#000",
+                    textAlign: "justify",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  If you have any questions or need clarification regarding this
+                  decision, please do not hesitate to contact us.
+                </Typography>
+              </>
+            )}
           </Box>
 
           {/* Signature Section */}
