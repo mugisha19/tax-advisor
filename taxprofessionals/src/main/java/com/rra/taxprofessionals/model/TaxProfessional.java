@@ -207,6 +207,47 @@ public class TaxProfessional {
     @Column(name = "rejection_letter_auto_sent", nullable = false)
     private Boolean rejectionLetterAutoSent = false;
 
+    // ==================== MANUAL RESET FIELDS (RRA Special Permission) ====================
+    /**
+     * Indicates if this application has been manually reset by RRA officer
+     * This allows rejected applicants (1st or 2nd rejection) to start fresh
+     * while preserving full audit trail
+     */
+    @Column(name = "is_manual_reset", nullable = false)
+    private Boolean isManualReset = false;
+
+    /**
+     * Timestamp when the application was manually reset to REGISTERED status
+     */
+    @Column(name = "manual_reset_date")
+    private LocalDateTime manualResetDate;
+
+    /**
+     * Officer who performed the manual reset
+     */
+    @Column(name = "manual_reset_by")
+    private String manualResetBy;
+
+    /**
+     * Reason for the manual reset (e.g., "RRA Special Permission - Extended Deadline")
+     */
+    @Column(name = "manual_reset_reason", length = 500)
+    private String manualResetReason;
+
+    /**
+     * Counts how many times this application has been manually reset
+     * For audit trail purposes
+     */
+    @Column(name = "manual_reset_count", nullable = false)
+    private Integer manualResetCount = 0;
+
+    /**
+     * Stores the rejection count at the time of reset (for audit)
+     * This preserves knowledge of how many times user was rejected before reset
+     */
+    @Column(name = "rejection_count_at_reset")
+    private Integer rejectionCountAtReset;
+
     // ========================================================================
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", insertable = false, updatable = false)
@@ -235,6 +276,12 @@ public class TaxProfessional {
         }
         if (rejectionLetterAutoSent == null) {
             rejectionLetterAutoSent = false;
+        }
+        if (isManualReset == null) {
+            isManualReset = false;
+        }
+        if (manualResetCount == null) {
+            manualResetCount = 0;
         }
     }
 
@@ -368,5 +415,65 @@ public class TaxProfessional {
      */
     public boolean isIndividualApplication() {
         return this.companyId == null || this.companyId.trim().isEmpty();
+    }
+
+    // ==================== MANUAL RESET METHODS (RRA SPECIAL PERMISSION) ====================
+    /**
+     * Manually resets application to REGISTERED status - RRA Special Permission
+     * This allows rejected applicants to start fresh while preserving full audit trail
+     * 
+     * @param officerName Name of the officer performing the reset
+     * @param reason Reason for the reset
+     */
+    public void performManualReset(String officerName, String reason) {
+        // Store rejection count before reset (for audit)
+        this.rejectionCountAtReset = this.rejectionCount;
+        
+        // Increment manual reset count
+        this.manualResetCount = (this.manualResetCount == null ? 0 : this.manualResetCount) + 1;
+        
+        // Record reset metadata
+        this.isManualReset = true;
+        this.manualResetDate = LocalDateTime.now();
+        this.manualResetBy = officerName;
+        this.manualResetReason = reason;
+        
+        // Reset status to REGISTERED (allows fresh submission)
+        this.status = ApplicationStatus.REGISTERED;
+        
+        // Reset rejection count to 0 (fresh start, but preserved in rejectionCountAtReset for audit)
+        this.rejectionCount = 0;
+        
+        // Clear blocking fields
+        this.isReapplication = false;
+        
+        // ⚠️ AUDIT TRAIL: The following fields are PRESERVED for audit purposes:
+        // - this.rejectionCountAtReset (NEW - captures count before reset)
+        // - this.rejectionReason (PRESERVED - remains unchanged)
+        // - this.previousRejectionReason (PRESERVED - remains unchanged)
+        // - this.reviewedBy (PRESERVED - remains unchanged)
+        // - this.reviewedAt (PRESERVED - remains unchanged)
+        // - this.firstRejectionDate (PRESERVED - remains unchanged)
+        // - this.problematicDocumentIds (PRESERVED - remains unchanged)
+        // - this.documents (PRESERVED - remains unchanged)
+        
+        System.out.println("[MANUAL RESET] TPIN: " + this.tpin
+                + " - Reset by " + officerName 
+                + " - Reset count: " + this.manualResetCount
+                + " - Previous rejection count: " + this.rejectionCountAtReset
+                + " - NEW rejection count: " + this.rejectionCount
+                + " - Audit data preserved: rejectionReason=" + (this.rejectionReason != null ? "YES" : "NO")
+                + ", reviewedBy=" + (this.reviewedBy != null ? this.reviewedBy : "N/A"));
+    }
+    
+    /**
+     * Checks if this application can be manually reset
+     * 
+     * @return true if eligible for manual reset
+     */
+    public boolean canBeManuallyReset() {
+        // Can reset REJECTED applications OR PENDING applications with rejection count >= 1
+        return this.status == ApplicationStatus.REJECTED || 
+               (this.status == ApplicationStatus.PENDING && this.rejectionCount != null && this.rejectionCount >= 1);
     }
 }

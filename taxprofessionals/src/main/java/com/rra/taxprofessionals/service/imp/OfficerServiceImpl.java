@@ -8,7 +8,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -440,6 +442,126 @@ public class OfficerServiceImpl implements OfficerService {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to set password: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<Map<String, Object>> manuallyResetApplication(String tpin, String reason, String officerEmployeeId) {
+        try {
+            log.info("🔄 Manual reset requested for TPIN: {} by officer: {}", tpin, officerEmployeeId);
+            
+            // Validate inputs
+            if (tpin == null || tpin.trim().isEmpty()) {
+                log.warn("⚠️ Manual reset failed - TPIN is required");
+                return ApiResponse.error("TPIN is required");
+            }
+            
+            if (reason == null || reason.trim().isEmpty()) {
+                log.warn("⚠️ Manual reset failed - Reason is required");
+                return ApiResponse.error("Reset reason is required for audit trail");
+            }
+            
+            if (officerEmployeeId == null || officerEmployeeId.trim().isEmpty()) {
+                log.warn("⚠️ Manual reset failed - Officer ID is required");
+                return ApiResponse.error("Officer identification is required");
+            }
+            
+            // Find the tax professional
+            TaxProfessional taxProfessional = taxProfessionalRepository.findById(tpin)
+                    .orElse(null);
+            
+            if (taxProfessional == null) {
+                log.warn("⚠️ Manual reset failed - Tax professional not found: {}", tpin);
+                return ApiResponse.error("Application not found with TPIN: " + tpin);
+            }
+            
+            // Validate that application can be reset
+            if (!taxProfessional.canBeManuallyReset()) {
+                log.warn("⚠️ Manual reset failed - Application not eligible: {} (status: {}, rejectionCount: {})", 
+                        tpin, taxProfessional.getStatus(), taxProfessional.getRejectionCount());
+                return ApiResponse.error("Only REJECTED applications or PENDING applications with rejection count >= 1 can be manually reset. Current status: " 
+                        + taxProfessional.getStatus() + ", Rejection count: " + taxProfessional.getRejectionCount());
+            }
+            
+            // Get officer details
+            Officer officer = officerRepository.findByEmployeeId(officerEmployeeId).orElse(null);
+            if (officer == null) {
+                log.warn("⚠️ Manual reset failed - Officer not found: {}", officerEmployeeId);
+                return ApiResponse.error("Officer not found with ID: " + officerEmployeeId);
+            }
+            
+            String officerName = officer.getNames();
+            
+            // Log pre-reset state for audit (capture all fields that must be preserved)
+            Integer preResetRejectionCount = taxProfessional.getRejectionCount();
+            String preResetRejectionReason = taxProfessional.getRejectionReason();
+            String preResetPreviousRejectionReason = taxProfessional.getPreviousRejectionReason();
+            String preResetReviewedBy = taxProfessional.getReviewedBy();
+            LocalDateTime preResetReviewedAt = taxProfessional.getReviewedAt();
+            LocalDateTime preResetFirstRejectionDate = taxProfessional.getFirstRejectionDate();
+            
+            log.info("📋 PRE-RESET STATE - TPIN: {}, Status: {}, RejectionCount: {}, RejectionReason: {}, ReviewedBy: {}", 
+                    tpin, 
+                    taxProfessional.getStatus(),
+                    preResetRejectionCount,
+                    preResetRejectionReason != null ? preResetRejectionReason.substring(0, Math.min(50, preResetRejectionReason.length())) + "..." : "NULL",
+                    preResetReviewedBy);
+            
+            // Perform the manual reset (resets rejectionCount to 0, preserves other audit data in dedicated fields)
+            taxProfessional.performManualReset(officerName, reason);
+            
+            // Save to database (JPA UPDATE - only modified fields updated)
+            TaxProfessional saved = taxProfessionalRepository.save(taxProfessional);
+            
+            // VERIFY audit data was preserved in dedicated audit fields after save
+            boolean auditDataPreserved = 
+                saved.getRejectionCountAtReset().equals(preResetRejectionCount) && // Original count preserved here
+                (saved.getRejectionReason() != null ? saved.getRejectionReason().equals(preResetRejectionReason) : preResetRejectionReason == null) &&
+                (saved.getReviewedBy() != null ? saved.getReviewedBy().equals(preResetReviewedBy) : preResetReviewedBy == null);
+            
+            if (!auditDataPreserved) {
+                log.error("❌ AUDIT DATA NOT PRESERVED! Pre-reset count: {}, RejectionCountAtReset: {}", 
+                    preResetRejectionCount, saved.getRejectionCountAtReset());
+                throw new RuntimeException("Audit data integrity check failed - data was not preserved");
+            }
+            
+            // Log post-reset state for audit
+            log.info("✅ POST-RESET STATE - TPIN: {}, NewStatus: {}, NewRejectionCount: {}, ManualResetCount: {}, ManualResetBy: {}, RejectionCountAtReset: {}, PRESERVED_RejectionReason: {}, PRESERVED_ReviewedBy: {}", 
+                    tpin,
+                    saved.getStatus(),
+                    saved.getRejectionCount(), // Now 0 (fresh start)
+                    saved.getManualResetCount(),
+                    saved.getManualResetBy(),
+                    saved.getRejectionCountAtReset(), // Original count preserved here
+                    saved.getRejectionReason() != null ? "YES" : "NO",
+                    saved.getReviewedBy());
+            
+            log.info("✅ AUDIT VERIFICATION: Rejection count reset to 0, original count preserved in rejectionCountAtReset field");
+            
+            // Prepare audit details for response
+            Map<String, Object> resetDetails = new HashMap<>();
+            resetDetails.put("tpin", saved.getTpin());
+            resetDetails.put("applicantName", saved.getFullName());
+            resetDetails.put("newStatus", saved.getStatus().toString());
+            resetDetails.put("resetDate", saved.getManualResetDate().toString());
+            resetDetails.put("resetBy", saved.getManualResetBy());
+            resetDetails.put("resetReason", saved.getManualResetReason());
+            resetDetails.put("resetCount", saved.getManualResetCount());
+            resetDetails.put("previousRejectionCount", saved.getRejectionCountAtReset());
+            resetDetails.put("newRejectionCount", saved.getRejectionCount()); // Should be 0 (fresh start)
+            resetDetails.put("preservedRejectionReason", saved.getRejectionReason());
+            resetDetails.put("preservedReviewedBy", saved.getReviewedBy());
+            
+            log.info("✅ Manual reset completed successfully for TPIN: {} by officer: {}", tpin, officerName);
+            
+            return ApiResponse.success(
+                    "Application has been manually reset to REGISTERED status. Rejection count reset to 0. All rejection history has been preserved for audit.",
+                    resetDetails);
+            
+        } catch (Exception e) {
+            log.error("❌ Error during manual reset for TPIN {}: {}", tpin, e.getMessage(), e);
+            return ApiResponse.error("Failed to reset application: " + e.getMessage());
         }
     }
 

@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.rra.taxprofessionals.dto.ApiResponse;
 import com.rra.taxprofessionals.dto.ApplicationReviewRequest;
+import com.rra.taxprofessionals.dto.ManualResetRequest;
 import com.rra.taxprofessionals.dto.OfficerResponse;
 import com.rra.taxprofessionals.dto.TaxProfessionalResponse;
 import com.rra.taxprofessionals.enums.ApplicationStatus;
@@ -74,6 +76,19 @@ public class OfficerController {
             @Valid @RequestBody ApplicationReviewRequest request) {
         String employeeId = authentication.getName();
         ApiResponse<TaxProfessionalResponse> response = officerService.reviewApplication(employeeId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/applications/manual-reset")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> manuallyResetApplication(
+            Authentication authentication,
+            @Valid @RequestBody ManualResetRequest request) {
+        String officerEmployeeId = authentication.getName();
+        ApiResponse<Map<String, Object>> response = officerService.manuallyResetApplication(
+                request.getTpin(),
+                request.getReason(),
+                officerEmployeeId);
         return ResponseEntity.ok(response);
     }
 

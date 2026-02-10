@@ -1,6 +1,7 @@
 package com.rra.taxprofessionals.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.rra.taxprofessionals.dto.ApiResponse;
 import com.rra.taxprofessionals.dto.ApplicationReviewRequest;
@@ -45,4 +46,17 @@ public interface OfficerService {
 
     // ========== PASSWORD RESET FLOW ==========
     ApiResponse<String> forgotPassword(String identifier); // Can be TIN or Email
+
+    // ========== MANUAL RESET (RRA SPECIAL PERMISSION) ==========
+    /**
+     * Manually resets a rejected application back to REGISTERED status
+     * This allows applicants who missed deadlines or were rejected to start fresh
+     * Full audit trail is preserved for audit compliance
+     * 
+     * @param tpin TPIN of the application to reset
+     * @param reason Reason for the reset
+     * @param officerEmployeeId Employee ID of the officer performing the reset
+     * @return ApiResponse with reset details and audit information
+     */
+    ApiResponse<Map<String, Object>> manuallyResetApplication(String tpin, String reason, String officerEmployeeId);
 }

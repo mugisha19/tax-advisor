@@ -617,6 +617,107 @@ const OfficerDashboard = () => {
     }
   };
   // ================================================================================
+  
+  // ==================== MANUAL RESET FUNCTION ====================
+  const handleManualReset = async (applicant) => {
+    try {
+      // Prompt for reset reason
+      const reason = window.prompt(
+        "⚠️ MANUAL RESET TO REGISTERED STATUS ⚠️\n\n" +
+          "This action will:\n" +
+          "• Reset application status to REGISTERED\n" +
+          "• Allow applicant to resubmit documents\n" +
+          "• Preserve ALL rejection history for audit\n" +
+          "• Record this reset action with your name\n\n" +
+          "Please provide a reason for this reset (required for audit trail):"
+      );
+
+      if (!reason || reason.trim() === "") {
+        alert("Reset cancelled. Reason is required for audit trail.");
+        return;
+      }
+
+      // Confirm action
+      const confirmed = window.confirm(
+        `Confirm Manual Reset for ${applicant.names}?\n\n` +
+          `TPIN: ${applicant.tpin}\n` +
+          `Current Status: ${applicant.status}\n` +
+          `Rejection Count: ${applicant.rejectionCount || 0}\n` +
+          `Reason: ${reason}\n\n` +
+          `⚠️ This action will be logged for audit purposes.\n\n` +
+          `Are you sure you want to proceed?`
+      );
+
+      if (!confirmed) return;
+
+      setLoading(true);
+      setMessage("🔄 Resetting application to REGISTERED status...");
+
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://10.0.0.65:8080'}/api/officer/applications/manual-reset`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            tpin: applicant.tpin,
+            reason: reason.trim(),
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Failed to reset application");
+      }
+
+      // Show success message with reset details
+      const details = result.data;
+      alert(
+        `✅ Application Reset Successfully!\n\n` +
+          `Applicant: ${details.applicantName}\n` +
+          `TPIN: ${details.tpin}\n` +
+          `New Status: ${details.newStatus}\n` +
+          `Reset By: ${details.resetBy}\n` +
+          `Reset Count: ${details.resetCount}\n\n` +
+          `═══════════════════════════════════\n` +
+          `AUDIT TRAIL PRESERVED:\n` +
+          `═══════════════════════════════════\n` +
+          `✓ Rejection Count: ${details.preservedRejectionCount || details.previousRejectionCount}\n` +
+          `✓ Rejection Reason: ${details.preservedRejectionReason ? 'YES' : 'N/A'}\n` +
+          `✓ Reviewed By: ${details.preservedReviewedBy || 'Preserved'}\n` +
+          `✓ All Documents: Preserved\n\n` +
+          `The applicant can now resubmit their application.\n` +
+          `All rejection history has been preserved for audit purposes.`
+      );
+
+      setMessage(
+        `✅ Application reset successfully for ${applicant.names}. Status changed to REGISTERED.`
+      );
+
+      // Refresh the applications list
+      await fetchApplicants();
+
+      // Close the detail view
+      setSelectedApplicant(null);
+
+      setTimeout(() => setMessage(""), 5000);
+    } catch (err) {
+      console.error("Manual reset error:", err);
+      setError(
+        err.message || "Failed to reset application. Please try again."
+      );
+      setTimeout(() => setError(""), 5000);
+    } finally {
+      setLoading(false);
+    }
+  };
+  // ================================================================================
+  
   const counts = useMemo(() => {
     // Filter out REGISTERED status applications
     let filteredApps = applicants.filter((a) => a.status !== "REGISTERED");
@@ -1039,16 +1140,32 @@ const OfficerDashboard = () => {
                     </>
                   )}
                   {selectedApplicant.status === "REJECTED" && (
+                    <>
+                      <button
+                        onClick={() =>
+                          handleDownloadRejectionCertificatePDF(selectedApplicant)
+                        }
+                        disabled={loading}
+                        className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white border-2 border-white/20 hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Download Rejection Letter"
+                      >
+                        <FileDown className="w-4 h-4 mr-2" />
+                        Download Rejection Letter
+                      </button>
+                    </>
+                  )}
+                  {/* Manual Reset Button - Show for REJECTED or PENDING with rejectionCount >= 1 */}
+                  {userRole === "ADMIN" && 
+                   (selectedApplicant.status === "REJECTED" || 
+                    (selectedApplicant.status === "PENDING" && selectedApplicant.rejectionCount >= 1)) && (
                     <button
-                      onClick={() =>
-                        handleDownloadRejectionCertificatePDF(selectedApplicant)
-                      }
+                      onClick={() => handleManualReset(selectedApplicant)}
                       disabled={loading}
-                      className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white border-2 border-white/20 hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Download Rejection Letter"
+                      className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold bg-purple-600 text-white border-2 border-white/20 hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Reset to Registered Status (Admin Only)"
                     >
-                      <FileDown className="w-4 h-4 mr-2" />
-                      Download Rejection Letter
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Reset to Registered
                     </button>
                   )}
                   {/* ========================================================================== */}
@@ -1467,6 +1584,98 @@ const OfficerDashboard = () => {
                       </div>
                     )}
                   {/* ============================================================================ */}
+                  
+                  {/* ==================== MANUAL RESET AUDIT TRAIL ==================== */}
+                  {selectedApplicant.isManualReset && (
+                    <div className="lg:col-span-2">
+                      <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-5">
+                        <div className="flex items-start gap-3 mb-4">
+                          <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <History className="w-5 h-5 text-purple-600" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-purple-900 text-base flex items-center gap-2">
+                              Manual Reset History
+                              <span className="px-2 py-0.5 bg-purple-200 text-purple-800 rounded text-xs font-bold">
+                                AUDIT TRAIL
+                              </span>
+                            </h4>
+                            <p className="text-sm text-purple-700 mt-1">
+                              This application has been manually reset by an administrator
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div className="bg-white border border-purple-200 rounded-lg p-3">
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <span className="text-gray-600 font-medium">Reset Count:</span>
+                                <span className="ml-2 text-purple-900 font-semibold">
+                                  {selectedApplicant.manualResetCount || 0}x
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-gray-600 font-medium">Last Reset Date:</span>
+                                <span className="ml-2 text-purple-900 font-semibold">
+                                  {selectedApplicant.manualResetDate 
+                                    ? formatDateLong(selectedApplicant.manualResetDate)
+                                    : "—"}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-gray-600 font-medium">Reset By:</span>
+                                <span className="ml-2 text-purple-900 font-semibold">
+                                  {selectedApplicant.manualResetBy || "—"}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-gray-600 font-medium">Rejection Count at Reset:</span>
+                                <span className="ml-2 text-red-900 font-semibold">
+                                  {selectedApplicant.rejectionCountAtReset || 0}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {selectedApplicant.manualResetReason && (
+                            <div className="bg-white border border-purple-200 rounded-lg p-3">
+                              <p className="text-xs font-semibold text-purple-700 uppercase mb-2">
+                                Reset Reason (Official Record)
+                              </p>
+                              <p className="text-gray-900 font-medium text-sm">
+                                {selectedApplicant.manualResetReason}
+                              </p>
+                            </div>
+                          )}
+                          
+                          {(selectedApplicant.rejectionReason || selectedApplicant.previousRejectionReason) && (
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                              <p className="text-xs font-semibold text-red-700 uppercase mb-2 flex items-center gap-1">
+                                <AlertTriangle className="w-3 h-3" />
+                                Preserved Rejection History
+                              </p>
+                              <p className="text-gray-900 font-medium text-sm">
+                                {selectedApplicant.rejectionReason || selectedApplicant.previousRejectionReason}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="mt-4 bg-purple-100 border border-purple-300 rounded-lg p-3">
+                          <p className="text-xs text-purple-800 flex items-center gap-2">
+                            <Info className="w-4 h-4 flex-shrink-0" />
+                            <span>
+                              All rejection data and documents are preserved for audit compliance. 
+                              This reset allows the applicant to resubmit their application.
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {/* ================================================================= */}
+                  
                   {/* Documents Section */}
                   <div className="lg:col-span-2 space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b-2 border-gray-100">
