@@ -60,9 +60,15 @@ public class CompanyServiceImpl implements CompanyService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private com.rra.taxprofessionals.service.SystemSettingsService systemSettingsService;
+
     @Override
     public ApiResponse<List<TaxProfessionalResponse>> registerCompany(CompanyRegistrationRequest request) {
         try {
+            // Validate system is not locked
+            systemSettingsService.validateSystemNotLocked();
+
             log.info("📝 Registering company: {}", request.getCompanyName());
 
             // Validate company email
@@ -236,6 +242,9 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public ApiResponse<TaxProfessionalResponse> addCompanyMember(String companyId, AddCompanyMemberRequest request, String userTpin) {
         try {
+            // Validate system is not locked
+            systemSettingsService.validateSystemNotLocked();
+
             log.info("➕ Adding member to company: {} by user: {}", companyId, userTpin);
 
             // Verify user belongs to the company (any authenticated company user can add members)
@@ -520,6 +529,14 @@ public class CompanyServiceImpl implements CompanyService {
             // Find the member to update
             TaxProfessional member = taxProfessionalRepository.findById(memberTpin)
                     .orElseThrow(() -> new ResourceNotFoundException("Company member not found with TPIN: " + memberTpin));
+
+            // ==================== SYSTEM LOCK VALIDATION ====================
+            // Block updates for REGISTERED status when system is locked
+            // (Existing PENDING/REJECTED can still update to complete their applications)
+            if (member.getStatus() == ApplicationStatus.REGISTERED) {
+                systemSettingsService.validateSystemNotLocked();
+            }
+            // ================================================================
 
             // Verify the member belongs to a company
             if (member.getCompanyId() == null) {

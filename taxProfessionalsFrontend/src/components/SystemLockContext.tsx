@@ -50,8 +50,9 @@ export const SystemLockProvider: React.FC<SystemLockProviderProps> = ({ children
   useEffect(() => {
     fetchSystemStatus();
     
-    // Refetch every 5 minutes to keep status updated
-    const interval = setInterval(fetchSystemStatus, 5 * 60 * 1000);
+    // Refetch every 1 minute to keep status updated
+    // Backend caches result for 30 seconds, reducing database load
+    const interval = setInterval(fetchSystemStatus, 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 

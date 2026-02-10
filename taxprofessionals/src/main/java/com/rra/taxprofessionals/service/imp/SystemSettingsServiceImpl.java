@@ -6,9 +6,12 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import com.rra.taxprofessionals.dto.SystemLockHistoryResponse;
 import com.rra.taxprofessionals.dto.SystemStatusResponse;
+import com.rra.taxprofessionals.exception.SystemLockedException;
 import com.rra.taxprofessionals.model.SystemLockHistory;
 import com.rra.taxprofessionals.model.SystemLockHistory.LockAction;
 import com.rra.taxprofessionals.model.SystemSettings;
@@ -65,7 +68,9 @@ public class SystemSettingsServiceImpl implements SystemSettingsService {
     }
 
     @Override
+    @Cacheable(value = "systemStatus", key = "'current'")
     public SystemStatusResponse getSystemStatus() {
+        log.debug("Fetching system status from database (cache miss)");
         SystemSettings settings = getOrCreateSettings();
         return mapToStatusResponse(settings);
     }
@@ -77,8 +82,20 @@ public class SystemSettingsServiceImpl implements SystemSettingsService {
     }
 
     @Override
+    public void validateSystemNotLocked() {
+        if (isSystemLocked()) {
+            throw new SystemLockedException(
+                "System is currently locked. New registrations, applications, and member additions are not allowed at this time. " +
+                "Please contact the Rwanda Revenue Authority for more information."
+            );
+        }
+    }
+
+    @Override
     @Transactional
+    @CacheEvict(value = "systemStatus", allEntries = true)
     public SystemStatusResponse lockSystem(Long officerId, String officerName, String notes) {
+        log.info("Locking system and clearing cache");
         SystemSettings settings = getOrCreateSettings();
 
         // Already locked - no action needed
@@ -112,7 +129,9 @@ public class SystemSettingsServiceImpl implements SystemSettingsService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "systemStatus", allEntries = true)
     public SystemStatusResponse unlockSystem(Long officerId, String officerName, String notes) {
+        log.info("Unlocking system and clearing cache");
         SystemSettings settings = getOrCreateSettings();
 
         // Already unlocked - no action needed

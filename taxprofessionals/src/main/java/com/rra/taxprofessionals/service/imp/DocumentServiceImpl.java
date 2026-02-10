@@ -52,6 +52,9 @@ public class DocumentServiceImpl implements DocumentService {
     @Autowired
     private DocumentRejectionRepository documentRejectionRepository;
 
+    @Autowired
+    private com.rra.taxprofessionals.service.SystemSettingsService systemSettingsService;
+
     @Value("${file.upload-dir}")
     private String uploadDir;
 
@@ -124,6 +127,14 @@ public class DocumentServiceImpl implements DocumentService {
         try {
             TaxProfessional taxProfessional = taxProfessionalRepository.findById(tpin)
                     .orElseThrow(() -> new ResourceNotFoundException("Tax professional not found with TPIN: " + tpin));
+
+            // ==================== SYSTEM LOCK VALIDATION ====================
+            // Block document uploads for REGISTERED status when system is locked
+            // (Existing PENDING/REJECTED can still upload to complete their applications)
+            if (taxProfessional.getStatus() == ApplicationStatus.REGISTERED) {
+                systemSettingsService.validateSystemNotLocked();
+            }
+            // ================================================================
 
             // ==================== VALIDATION FOR EDUCATION CERTIFICATE METADATA ====================
             if (documentType == DocumentType.EDUCERTIFICATE && certificateType != null && !certificateType.trim().isEmpty()) {

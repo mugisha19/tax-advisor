@@ -25,6 +25,14 @@ public interface SystemSettingsService {
     boolean isSystemLocked();
 
     /**
+     * Validate that the system is not locked.
+     * Throws SystemLockedException if the system is locked.
+     * 
+     * @throws SystemLockedException if system is locked
+     */
+    void validateSystemNotLocked();
+
+    /**
      * Lock the system (admin only)
      * 
      * @param officerId ID of the officer performing the action

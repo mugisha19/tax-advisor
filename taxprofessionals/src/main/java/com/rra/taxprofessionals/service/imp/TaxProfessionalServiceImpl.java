@@ -83,6 +83,9 @@ public class TaxProfessionalServiceImpl implements TaxProfessionalService {
     @Autowired
     private OfficerRepository officerRepository;
 
+    @Autowired
+    private com.rra.taxprofessionals.service.SystemSettingsService systemSettingsService;
+
     @Value("${file.upload-dir}")
     private String uploadDir;
 
@@ -120,6 +123,9 @@ public class TaxProfessionalServiceImpl implements TaxProfessionalService {
     @Override
     public ApiResponse<TaxProfessionalResponse> registerIndividual(RegistrationRequest request) {
         try {
+            // Validate system is not locked
+            systemSettingsService.validateSystemNotLocked();
+
             // Validate unique constraints
             validateUniqueFields(request.getTin(), request.getEmail(), request.getNid());
 
@@ -212,6 +218,13 @@ public class TaxProfessionalServiceImpl implements TaxProfessionalService {
             TaxProfessional taxProfessional = taxProfessionalRepository.findById(tpin)
                     .orElseThrow(() -> new ResourceNotFoundException("Tax professional not found with TPIN: " + tpin));
 
+            // ==================== SYSTEM LOCK VALIDATION ====================
+            // Block uploads for REGISTERED status when system is locked
+            if (taxProfessional.getStatus() == ApplicationStatus.REGISTERED) {
+                systemSettingsService.validateSystemNotLocked();
+            }
+            // ================================================================
+
             String fileName = storeFile(file);
             taxProfessional.setOtherProfessionalFilePath(fileName);
             taxProfessionalRepository.save(taxProfessional);
@@ -230,6 +243,13 @@ public class TaxProfessionalServiceImpl implements TaxProfessionalService {
         try {
             TaxProfessional taxProfessional = taxProfessionalRepository.findById(tpin)
                     .orElseThrow(() -> new ResourceNotFoundException("Tax professional not found with TPIN: " + tpin));
+
+            // ==================== SYSTEM LOCK VALIDATION ====================
+            // Block updates for REGISTERED status when system is locked
+            if (taxProfessional.getStatus() == ApplicationStatus.REGISTERED) {
+                systemSettingsService.validateSystemNotLocked();
+            }
+            // ================================================================
 
             // Validate masters degree requires bachelor
             if (request.getMastersDegree() != null && request.getBachelorDegree() == null) {
