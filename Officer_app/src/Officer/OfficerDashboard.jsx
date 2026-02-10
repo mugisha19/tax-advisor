@@ -10,6 +10,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import RejectionCommentModal from "./RejectionCommentModal";
+import ManualResetModal from "./ManualResetModal";
 import TaxProfessionalCertificate from "./TaxProfessionalCertificate";
 import RejectionCertificate from "./RejectionCertificate";
 import {
@@ -96,6 +97,10 @@ const OfficerDashboard = () => {
   const [rejectionReason, setRejectionReason] = useState("");
   const [pendingRejectionTpin, setPendingRejectionTpin] = useState(null);
   const [problematicDocumentIds, setProblematicDocumentIds] = useState([]);
+  // Manual Reset Modal State
+  const [showManualResetModal, setShowManualResetModal] = useState(false);
+  const [manualResetReason, setManualResetReason] = useState("");
+  const [pendingResetApplicant, setPendingResetApplicant] = useState(null);
   // ==================== NEW: REAPPLICATION FILTERS ====================
   const [showReapplicationsOnly, setShowReapplicationsOnly] = useState(false);
   const [rejectionCountFilter, setRejectionCountFilter] = useState("ALL");
@@ -619,37 +624,16 @@ const OfficerDashboard = () => {
   // ================================================================================
   
   // ==================== MANUAL RESET FUNCTION ====================
-  const handleManualReset = async (applicant) => {
+  const handleManualReset = (applicant) => {
+    setPendingResetApplicant(applicant);
+    setManualResetReason("");
+    setShowManualResetModal(true);
+  };
+
+  const handleManualResetConfirm = async () => {
+    if (!pendingResetApplicant || !manualResetReason.trim()) return;
+
     try {
-      // Prompt for reset reason
-      const reason = window.prompt(
-        "⚠️ MANUAL RESET TO REGISTERED STATUS ⚠️\n\n" +
-          "This action will:\n" +
-          "• Reset application status to REGISTERED\n" +
-          "• Allow applicant to resubmit documents\n" +
-          "• Preserve ALL rejection history for audit\n" +
-          "• Record this reset action with your name\n\n" +
-          "Please provide a reason for this reset (required for audit trail):"
-      );
-
-      if (!reason || reason.trim() === "") {
-        alert("Reset cancelled. Reason is required for audit trail.");
-        return;
-      }
-
-      // Confirm action
-      const confirmed = window.confirm(
-        `Confirm Manual Reset for ${applicant.names}?\n\n` +
-          `TPIN: ${applicant.tpin}\n` +
-          `Current Status: ${applicant.status}\n` +
-          `Rejection Count: ${applicant.rejectionCount || 0}\n` +
-          `Reason: ${reason}\n\n` +
-          `⚠️ This action will be logged for audit purposes.\n\n` +
-          `Are you sure you want to proceed?`
-      );
-
-      if (!confirmed) return;
-
       setLoading(true);
       setMessage("🔄 Resetting application to REGISTERED status...");
 
@@ -663,8 +647,8 @@ const OfficerDashboard = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            tpin: applicant.tpin,
-            reason: reason.trim(),
+            tpin: pendingResetApplicant.tpin,
+            reason: manualResetReason.trim(),
           }),
         }
       );
@@ -675,29 +659,14 @@ const OfficerDashboard = () => {
         throw new Error(result.message || "Failed to reset application");
       }
 
-      // Show success message with reset details
-      const details = result.data;
-      alert(
-        `✅ Application Reset Successfully!\n\n` +
-          `Applicant: ${details.applicantName}\n` +
-          `TPIN: ${details.tpin}\n` +
-          `New Status: ${details.newStatus}\n` +
-          `Reset By: ${details.resetBy}\n` +
-          `Reset Count: ${details.resetCount}\n\n` +
-          `═══════════════════════════════════\n` +
-          `AUDIT TRAIL PRESERVED:\n` +
-          `═══════════════════════════════════\n` +
-          `✓ Rejection Count: ${details.preservedRejectionCount || details.previousRejectionCount}\n` +
-          `✓ Rejection Reason: ${details.preservedRejectionReason ? 'YES' : 'N/A'}\n` +
-          `✓ Reviewed By: ${details.preservedReviewedBy || 'Preserved'}\n` +
-          `✓ All Documents: Preserved\n\n` +
-          `The applicant can now resubmit their application.\n` +
-          `All rejection history has been preserved for audit purposes.`
+      setMessage(
+        `✅ Application reset successfully for ${pendingResetApplicant.fullName || pendingResetApplicant.names}. Status changed to REGISTERED.`
       );
 
-      setMessage(
-        `✅ Application reset successfully for ${applicant.names}. Status changed to REGISTERED.`
-      );
+      // Close modal and reset state
+      setShowManualResetModal(false);
+      setManualResetReason("");
+      setPendingResetApplicant(null);
 
       // Refresh the applications list
       await fetchApplicants();
@@ -715,6 +684,12 @@ const OfficerDashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleManualResetModalClose = () => {
+    setShowManualResetModal(false);
+    setManualResetReason("");
+    setPendingResetApplicant(null);
   };
   // ================================================================================
   
@@ -1914,6 +1889,18 @@ const OfficerDashboard = () => {
           }
         />
         {/* =============================================================================== */}
+
+        {/* ==================== MANUAL RESET MODAL ==================== */}
+        <ManualResetModal
+          isOpen={showManualResetModal}
+          onClose={handleManualResetModalClose}
+          onConfirm={handleManualResetConfirm}
+          applicant={pendingResetApplicant}
+          reason={manualResetReason}
+          onReasonChange={setManualResetReason}
+          loading={loading}
+        />
+        {/* ============================================================ */}
       </>
     );
   }
@@ -2450,6 +2437,18 @@ const OfficerDashboard = () => {
         }
       />
       {/* =============================================================================== */}
+
+      {/* ==================== MANUAL RESET MODAL ==================== */}
+      <ManualResetModal
+        isOpen={showManualResetModal}
+        onClose={handleManualResetModalClose}
+        onConfirm={handleManualResetConfirm}
+        applicant={pendingResetApplicant}
+        reason={manualResetReason}
+        onReasonChange={setManualResetReason}
+        loading={loading}
+      />
+      {/* ============================================================ */}
     </>
   );
 };
