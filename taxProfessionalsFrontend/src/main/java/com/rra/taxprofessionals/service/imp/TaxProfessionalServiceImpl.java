@@ -792,7 +792,16 @@ public class TaxProfessionalServiceImpl implements TaxProfessionalService {
         response.setHasReapplied(hasReapplied);
         // ==============================================================
 
-        // ==================== DOCUMENT REJECTION FIELDS ====================
+        // ==================== MANUAL RESET FIELDS ====================
+        response.setIsManualReset(tp.getIsManualReset());
+        response.setManualResetDate(tp.getManualResetDate());
+        response.setManualResetBy(tp.getManualResetBy());
+        response.setManualResetReason(tp.getManualResetReason());
+        response.setManualResetCount(tp.getManualResetCount());
+        response.setRejectionCountAtReset(tp.getRejectionCountAtReset());
+        // =============================================================
+
+        // ==================== DOCUMENT REJECTION FIELDS ======================================
         // Populate problematicDocumentIds when status is REJECTED
         if (tp.getStatus() == ApplicationStatus.REJECTED) {
             List<DocumentRejection> documentRejections = documentRejectionRepository.findByTaxProfessionalTpin(tp.getTpin());

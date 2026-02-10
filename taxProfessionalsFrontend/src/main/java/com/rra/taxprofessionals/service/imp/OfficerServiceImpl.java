@@ -1063,7 +1063,16 @@ public class OfficerServiceImpl implements OfficerService {
         response.setHasReapplied(hasReapplied);
         // ==============================================================
 
-        // ==================== COMPANY ACCOUNT FIELDS ====================
+        // ==================== MANUAL RESET FIELDS ====================
+        response.setIsManualReset(tp.getIsManualReset());
+        response.setManualResetDate(tp.getManualResetDate());
+        response.setManualResetBy(tp.getManualResetBy());
+        response.setManualResetReason(tp.getManualResetReason());
+        response.setManualResetCount(tp.getManualResetCount());
+        response.setRejectionCountAtReset(tp.getRejectionCountAtReset());
+        // =============================================================
+
+        // ==================== COMPANY ACCOUNT FIELDS ======================================
         // Check if this is a company member
         if (tp.getCompanyId() != null) {
             response.setAccountType("COMPANY");

@@ -978,6 +978,7 @@ const OfficerDashboard = () => {
     const isReapplication = selectedApplicant.isReapplication === true;
     const rejectionCount = selectedApplicant.rejectionCount || 0;
     const hasReapplicationHistory = isReapplication || rejectionCount > 0;
+    const isManualReset = selectedApplicant.isManualReset === true;
     // ===================================================================
     return (
       <>
@@ -1072,7 +1073,13 @@ const OfficerDashboard = () => {
                         Required Attention
                       </span>
                     )}
-                  {/* ==================== NEW: REAPPLICATION BADGE ==================== */}
+                  {/* ==================== REAPPLICATION & MANUAL RESET BADGES ==================== */}
+                  {isManualReset && (
+                    <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-500 text-white border-2 border-white/20">
+                      <History className="w-3 h-3 mr-1.5" />
+                      Manually Reset
+                    </span>
+                  )}
                   {isReapplication && (
                     <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-orange-500 text-white border-2 border-white/20">
                       <RotateCcw className="w-3 h-3 mr-1.5" />
@@ -2270,6 +2277,7 @@ const OfficerDashboard = () => {
                       // ==================== NEW: REAPPLICATION CHECKS ====================
                       const isReapplication = app.isReapplication === true;
                       const rejectionCount = app.rejectionCount || 0;
+                      const isManualReset = app.isManualReset === true;
                       // ===================================================================
                       return (
                         <tr
@@ -2288,7 +2296,10 @@ const OfficerDashboard = () => {
                                 isInRequiredAttention(app.tpin) && (
                                   <Bell className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />
                                 )}
-                              {/* ==================== NEW: REAPPLICATION INDICATORS ==================== */}
+                              {/* ==================== REAPPLICATION & RESET INDICATORS ==================== */}
+                              {isManualReset && (
+                                <History className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" title="Manually Reset" />
+                              )}
                               {isReapplication && (
                                 <RotateCcw className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />
                               )}
@@ -2300,12 +2311,20 @@ const OfficerDashboard = () => {
                               <span className="text-gray-900 font-medium text-sm break-words block">
                                 {app.fullName || "—"}
                               </span>
-                              {/* ==================== NEW: REJECTION COUNT BADGE ==================== */}
+                              {/* ==================== REJECTION COUNT & RESET BADGES ==================== */}
                               {rejectionCount > 0 && (
                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
                                   <AlertTriangle className="w-3 h-3 mr-1 flex-shrink-0" />
                                   <span className="whitespace-nowrap">
                                     Rejected {rejectionCount}x
+                                  </span>
+                                </span>
+                              )}
+                              {isManualReset && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                                  <History className="w-3 h-3 mr-1 flex-shrink-0" />
+                                  <span className="whitespace-nowrap">
+                                    Reset
                                   </span>
                                 </span>
                               )}
