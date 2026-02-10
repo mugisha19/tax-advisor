@@ -30,5 +30,18 @@ public class ApplicationsController {
         ApiResponse<TaxProfessionalResponse> response = taxProfessionalService.resubmitApplication(tpin);
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * Submit a REGISTERED application (change status to PENDING)
+     * Used after admin manual reset when user already has documents uploaded.
+     * POST /api/applications/{tpin}/submit
+     */
+    @PostMapping("/{tpin}/submit")
+    @PreAuthorize("hasRole('TAXPROFESSIONAL')")
+    public ResponseEntity<ApiResponse<TaxProfessionalResponse>> submitApplication(
+            @PathVariable String tpin) {
+        ApiResponse<TaxProfessionalResponse> response = taxProfessionalService.submitApplication(tpin);
+        return ResponseEntity.ok(response);
+    }
 }
 

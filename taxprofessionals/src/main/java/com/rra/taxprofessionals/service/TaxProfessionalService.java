@@ -61,4 +61,10 @@ public interface TaxProfessionalService {
      * Resubmit a rejected application by changing status to PENDING
      */
     ApiResponse<TaxProfessionalResponse> resubmitApplication(String tpin);
+
+    /**
+     * Submit a REGISTERED application (with documents) to change status to PENDING.
+     * Used after admin manual reset when user has already uploaded documents.
+     */
+    ApiResponse<TaxProfessionalResponse> submitApplication(String tpin);
 }

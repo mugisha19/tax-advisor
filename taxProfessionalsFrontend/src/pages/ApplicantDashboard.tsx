@@ -20,6 +20,7 @@ import {
   AlertTriangle,
   Upload,
   Lock,
+  Send,
 } from "lucide-react";
 import rra from "../imgs/rra.png";
 import { getCurrentUser } from "../services/getCurrentUser";
@@ -28,6 +29,7 @@ import { downloadCertificate } from "../services/downloadCertificate";
 import { viewDocument } from "../services/viewDocument";
 import { updateDocument } from "../services/updateDocument";
 import { resubmitApplication } from "../services/resubmitApplication";
+import { submitApplication } from "../services/submitApplication";
 import { useSystemLock } from "../components/SystemLockContext";
 
 // ✅ FIX: Use type-only imports
@@ -79,6 +81,7 @@ export default function ApplicantDashboard() {
   );
   const [showResubmitModal, setShowResubmitModal] = useState(false);
   const [postponedResubmit, setPostponedResubmit] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const navigate = useNavigate();
   const mainContentRef = useRef<HTMLElement>(null);
@@ -173,6 +176,39 @@ export default function ApplicantDashboard() {
   };
 
   const [resubmitting, setResubmitting] = useState(false);
+
+  const handleSubmitApplication = async () => {
+    if (!application) return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to submit your application for review?\n\n" +
+        "Once submitted, your application status will change to PENDING and an officer will review it."
+    );
+    if (!confirmed) return;
+
+    try {
+      setSubmitting(true);
+
+      await submitApplication(application.tpin);
+
+      // Refresh application data to get updated status
+      const response = await getCurrentUser();
+      const userData = response.data.data;
+      setApplication(userData as unknown as Application);
+
+      showToast(
+        "Application submitted successfully. Your application is now pending review.",
+        "success"
+      );
+    } catch (err: any) {
+      showToast(
+        err.response?.data?.message || "Failed to submit application",
+        "error"
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleResubmit = async () => {
     if (!application) return;
@@ -889,15 +925,56 @@ export default function ApplicantDashboard() {
 
                 {application.status === ApplicationStatus.REGISTERED &&
                   documents.length > 0 && (
-                    <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
-                      <div className="flex items-start">
-                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 mr-3" />
-                        <p className="text-sm text-green-800">
-                          Your documents have been submitted successfully. Your
-                          application is being processed.
-                        </p>
+                    <>
+                      {/* Previous Rejection Reason - shown after admin manual reset */}
+                      {(application.previousRejectionReason || application.rejectionReason) && (
+                        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg">
+                          <div className="flex items-start">
+                            <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 mr-3 flex-shrink-0" />
+                            <div className="flex-1">
+                              <h3 className="text-sm font-semibold text-amber-800 mb-1">
+                                Previous Rejection Reason:
+                              </h3>
+                              <p className="text-sm text-amber-700 whitespace-pre-wrap">
+                                {application.previousRejectionReason || application.rejectionReason}
+                              </p>
+                              <p className="text-xs text-amber-600 mt-2">
+                                Your application was reset by an administrator. Please review the above reason, update your documents if needed, and submit your application.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                        <div className="flex items-start">
+                          <CheckCircle className="h-5 w-5 text-blue-500 mt-0.5 mr-3" />
+                          <p className="text-sm text-blue-800">
+                            Your documents have been uploaded. Please click the button below to submit your application for review.
+                          </p>
+                        </div>
                       </div>
-                    </div>
+
+                      <div className="flex justify-center">
+                        <button
+                          onClick={handleSubmitApplication}
+                          disabled={submitting}
+                          className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold px-6 py-3 rounded-lg transition duration-200 shadow-md"
+                        >
+                          {submitting ? (
+                            <>
+                              <LoadingSpinner size="sm" className="text-white" />
+                              <span>Submitting...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Send size={20} />
+                              <span>Submit Application</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </>
                   )}
 
                 {application.status === ApplicationStatus.PENDING && (

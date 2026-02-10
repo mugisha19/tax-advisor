@@ -15,6 +15,7 @@ import {
   Phone,
   FileText,
   Building,
+  Send,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { CompanyMember, CompanyAccount } from "../types/company";
@@ -38,6 +39,7 @@ import { viewDocument } from "../services/viewDocument";
 import { updateDocument } from "../services/updateDocument";
 import { updateRejectedDocument } from "../services/updateRejectedDocument";
 import { resubmitApplication } from "../services/resubmitApplication";
+import { submitApplication } from "../services/submitApplication";
 import { downloadCertificate } from "../services/downloadCertificate";
 import StatusBadge from "./StatusBadge";
 import LoadingSpinner from "./LoadingSpinner";
@@ -71,6 +73,7 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
   );
   const [showResubmitModal, setShowResubmitModal] = useState(false);
   const [postponedResubmit, setPostponedResubmit] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [processingDocId, setProcessingDocId] = useState<number | null>(null);
   const [actionType, setActionType] = useState<
     "view" | "download" | "replace" | null
@@ -709,6 +712,28 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                     )}
                   </div>
 
+                  {/* Previous Rejection Reason - shown after admin manual reset (REGISTERED with docs) */}
+                  {application.status === ApplicationStatus.REGISTERED &&
+                    documents.length > 0 &&
+                    (application.previousRejectionReason || application.rejectionReason) && (
+                      <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-4">
+                        <div className="flex items-start space-x-3">
+                          <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                          <div className="flex-1">
+                            <h4 className="text-sm font-semibold text-amber-800 mb-1">
+                              Previous Rejection Reason:
+                            </h4>
+                            <p className="text-sm text-amber-700 whitespace-pre-wrap">
+                              {application.previousRejectionReason || application.rejectionReason}
+                            </p>
+                            <p className="text-xs text-amber-600 mt-2">
+                              This application was reset by an administrator. Please review the above reason, update documents if needed, and submit the application.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                   {/* Rejection Reason */}
                   {application.status === ApplicationStatus.REJECTED &&
                     application.rejectionReason && (
@@ -812,6 +837,53 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
 
                   {/* Action Buttons */}
                   <div className="mt-4 flex flex-wrap gap-3">
+                    {/* Submit Application - REGISTERED with documents */}
+                    {application.status === ApplicationStatus.REGISTERED &&
+                      documents.length > 0 && (
+                        <button
+                          onClick={async () => {
+                            if (!application) return;
+                            const confirmed = window.confirm(
+                              "Are you sure you want to submit this member's application for review?\n\n" +
+                                "Once submitted, the application status will change to PENDING and an officer will review it."
+                            );
+                            if (!confirmed) return;
+                            try {
+                              setSubmitting(true);
+                              await submitApplication(member.tpin);
+                              const appResponse = await getDetails(member.tpin);
+                              const appData = appResponse.data.data || appResponse.data;
+                              setApplication(appData as Application);
+                              showToast(
+                                "Application submitted successfully. Status changed to PENDING.",
+                                "success"
+                              );
+                            } catch (err: any) {
+                              showToast(
+                                err.response?.data?.message || "Failed to submit application",
+                                "error"
+                              );
+                            } finally {
+                              setSubmitting(false);
+                            }
+                          }}
+                          disabled={submitting}
+                          className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold px-4 py-2 rounded-lg transition duration-200"
+                        >
+                          {submitting ? (
+                            <>
+                              <LoadingSpinner size="sm" />
+                              <span>Submitting...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Send size={20} />
+                              <span>Submit Application</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+
                     {/* Download Certificate - APPROVED */}
                     {application.status === ApplicationStatus.APPROVED && (
                       <button

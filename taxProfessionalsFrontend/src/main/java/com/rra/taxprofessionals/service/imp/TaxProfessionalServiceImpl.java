@@ -779,6 +779,9 @@ public class TaxProfessionalServiceImpl implements TaxProfessionalService {
         // ==============================================================
 
         // ==================== REAPPLICATION FIELDS ====================
+        response.setPreviousRejectionReason(tp.getPreviousRejectionReason());
+        response.setPreviousReviewedBy(tp.getPreviousReviewedBy());
+        response.setPreviousReviewedAt(tp.getPreviousReviewedAt());
         // Ensure rejectionCount defaults to 0 if null
         response.setRejectionCount(tp.getRejectionCount() != null ? tp.getRejectionCount() : 0);
         response.setReapplicationDate(tp.getReapplicationDate());
@@ -915,6 +918,38 @@ public class TaxProfessionalServiceImpl implements TaxProfessionalService {
         } catch (Exception e) {
             log.error("❌ Failed to resubmit application for TPIN {}: {}", tpin, e.getMessage(), e);
             throw new RuntimeException("Failed to resubmit application: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public ApiResponse<TaxProfessionalResponse> submitApplication(String tpin) {
+        try {
+            log.info("📤 Processing application submission for TPIN: {}", tpin);
+
+            TaxProfessional taxProfessional = taxProfessionalRepository.findById(tpin)
+                    .orElseThrow(() -> new ResourceNotFoundException("Application not found with TPIN: " + tpin));
+
+            // Validate status is REGISTERED
+            if (taxProfessional.getStatus() != ApplicationStatus.REGISTERED) {
+                throw new InvalidRequestException(
+                        "Application cannot be submitted. Current status: " + taxProfessional.getStatus()
+                        + ". Only REGISTERED applications can be submitted.");
+            }
+
+            // Change status to PENDING
+            taxProfessional.setStatus(ApplicationStatus.PENDING);
+
+            TaxProfessional updated = taxProfessionalRepository.save(taxProfessional);
+            log.info("✅ Application submitted successfully - TPIN: {}, Status changed to PENDING", tpin);
+
+            return ApiResponse.success("Application submitted successfully. Status changed to PENDING.",
+                    mapToTaxProfessionalResponse(updated));
+
+        } catch (ResourceNotFoundException | InvalidRequestException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("❌ Failed to submit application for TPIN {}: {}", tpin, e.getMessage(), e);
+            throw new RuntimeException("Failed to submit application: " + e.getMessage(), e);
         }
     }
 
