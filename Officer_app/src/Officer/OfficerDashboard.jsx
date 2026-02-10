@@ -54,6 +54,8 @@ import {
   SortDesc,
   TrendingUp,
   FileDown,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 const STATUS_TABS = [
   { key: "ALL", label: "All Applications", icon: Users, color: "gray" },
@@ -108,6 +110,7 @@ const OfficerDashboard = () => {
   // ====================================================================
   // ==================== NEW: CERTIFICATE STATE ====================
   const [showCertificate, setShowCertificate] = useState(false);
+  const [showResetHistory, setShowResetHistory] = useState(false);
   const [certificateApplicant, setCertificateApplicant] = useState(null);
   const [certificateType, setCertificateType] = useState("APPROVAL"); // 'APPROVAL' or 'REJECTION'
   const [certificateRejectionReason, setCertificateRejectionReason] =
@@ -1567,92 +1570,106 @@ const OfficerDashboard = () => {
                     )}
                   {/* ============================================================================ */}
                   
-                  {/* ==================== MANUAL RESET AUDIT TRAIL ==================== */}
+                  {/* ==================== MANUAL RESET AUDIT TRAIL (COLLAPSIBLE) ==================== */}
                   {selectedApplicant.isManualReset && (
                     <div className="lg:col-span-2">
-                      <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-5">
-                        <div className="flex items-start gap-3 mb-4">
-                          <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <History className="w-5 h-5 text-purple-600" />
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-purple-900 text-base flex items-center gap-2">
-                              Manual Reset History
-                              <span className="px-2 py-0.5 bg-purple-200 text-purple-800 rounded text-xs font-bold">
-                                AUDIT TRAIL
-                              </span>
-                            </h4>
-                            <p className="text-sm text-purple-700 mt-1">
-                              This application has been manually reset by an administrator
-                            </p>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-3">
-                          <div className="bg-white border border-purple-200 rounded-lg p-3">
-                            <div className="grid grid-cols-2 gap-3 text-sm">
-                              <div>
-                                <span className="text-gray-600 font-medium">Reset Count:</span>
-                                <span className="ml-2 text-purple-900 font-semibold">
-                                  {selectedApplicant.manualResetCount || 0}x
-                                </span>
-                              </div>
-                              <div>
-                                <span className="text-gray-600 font-medium">Last Reset Date:</span>
-                                <span className="ml-2 text-purple-900 font-semibold">
-                                  {selectedApplicant.manualResetDate 
-                                    ? formatDateLong(selectedApplicant.manualResetDate)
-                                    : "—"}
-                                </span>
-                              </div>
-                              <div>
-                                <span className="text-gray-600 font-medium">Reset By:</span>
-                                <span className="ml-2 text-purple-900 font-semibold">
-                                  {selectedApplicant.manualResetBy || "—"}
-                                </span>
-                              </div>
-                              <div>
-                                <span className="text-gray-600 font-medium">Rejection Count at Reset:</span>
-                                <span className="ml-2 text-red-900 font-semibold">
-                                  {selectedApplicant.rejectionCountAtReset || 0}
-                                </span>
-                              </div>
+                      <div className="bg-purple-50 border-2 border-purple-200 rounded-xl overflow-hidden">
+                        {/* Clickable Header - always visible */}
+                        <button
+                          onClick={() => setShowResetHistory(!showResetHistory)}
+                          className="w-full flex items-center justify-between px-5 py-4 hover:bg-purple-100/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <History className="w-5 h-5 text-purple-600" />
                             </div>
-                          </div>
-                          
-                          {selectedApplicant.manualResetReason && (
-                            <div className="bg-white border border-purple-200 rounded-lg p-3">
-                              <p className="text-xs font-semibold text-purple-700 uppercase mb-2">
-                                Reset Reason (Official Record)
-                              </p>
-                              <p className="text-gray-900 font-medium text-sm">
-                                {selectedApplicant.manualResetReason}
+                            <div className="text-left">
+                              <h4 className="font-semibold text-purple-900 text-base flex items-center gap-2">
+                                Manual Reset History
+                                <span className="px-2 py-0.5 bg-purple-200 text-purple-800 rounded text-xs font-bold">
+                                  AUDIT TRAIL
+                                </span>
+                              </h4>
+                              <p className="text-sm text-purple-700 mt-0.5">
+                                Reset {selectedApplicant.manualResetCount || 0}x — Last by {selectedApplicant.manualResetBy || "admin"}
                               </p>
                             </div>
+                          </div>
+                          {showResetHistory ? (
+                            <ChevronUp className="w-5 h-5 text-purple-600 flex-shrink-0" />
+                          ) : (
+                            <ChevronDown className="w-5 h-5 text-purple-600 flex-shrink-0" />
                           )}
-                          
-                          {(selectedApplicant.rejectionReason || selectedApplicant.previousRejectionReason) && (
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                              <p className="text-xs font-semibold text-red-700 uppercase mb-2 flex items-center gap-1">
-                                <AlertTriangle className="w-3 h-3" />
-                                Preserved Rejection History
-                              </p>
-                              <p className="text-gray-900 font-medium text-sm">
-                                {selectedApplicant.rejectionReason || selectedApplicant.previousRejectionReason}
+                        </button>
+                        
+                        {/* Collapsible Content */}
+                        {showResetHistory && (
+                          <div className="px-5 pb-5 space-y-3 border-t border-purple-200">
+                            <div className="bg-white border border-purple-200 rounded-lg p-3 mt-3">
+                              <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                  <span className="text-gray-600 font-medium">Reset Count:</span>
+                                  <span className="ml-2 text-purple-900 font-semibold">
+                                    {selectedApplicant.manualResetCount || 0}x
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600 font-medium">Last Reset Date:</span>
+                                  <span className="ml-2 text-purple-900 font-semibold">
+                                    {selectedApplicant.manualResetDate 
+                                      ? formatDateLong(selectedApplicant.manualResetDate)
+                                      : "—"}
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600 font-medium">Reset By:</span>
+                                  <span className="ml-2 text-purple-900 font-semibold">
+                                    {selectedApplicant.manualResetBy || "—"}
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600 font-medium">Rejection Count at Reset:</span>
+                                  <span className="ml-2 text-red-900 font-semibold">
+                                    {selectedApplicant.rejectionCountAtReset || 0}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {selectedApplicant.manualResetReason && (
+                              <div className="bg-white border border-purple-200 rounded-lg p-3">
+                                <p className="text-xs font-semibold text-purple-700 uppercase mb-2">
+                                  Reset Reason (Official Record)
+                                </p>
+                                <p className="text-gray-900 font-medium text-sm">
+                                  {selectedApplicant.manualResetReason}
+                                </p>
+                              </div>
+                            )}
+                            
+                            {(selectedApplicant.rejectionReason || selectedApplicant.previousRejectionReason) && (
+                              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                <p className="text-xs font-semibold text-red-700 uppercase mb-2 flex items-center gap-1">
+                                  <AlertTriangle className="w-3 h-3" />
+                                  Preserved Rejection History
+                                </p>
+                                <p className="text-gray-900 font-medium text-sm">
+                                  {selectedApplicant.rejectionReason || selectedApplicant.previousRejectionReason}
+                                </p>
+                              </div>
+                            )}
+                            
+                            <div className="bg-purple-100 border border-purple-300 rounded-lg p-3">
+                              <p className="text-xs text-purple-800 flex items-center gap-2">
+                                <Info className="w-4 h-4 flex-shrink-0" />
+                                <span>
+                                  All rejection data and documents are preserved for audit compliance. 
+                                  This reset allows the applicant to resubmit their application.
+                                </span>
                               </p>
                             </div>
-                          )}
-                        </div>
-                        
-                        <div className="mt-4 bg-purple-100 border border-purple-300 rounded-lg p-3">
-                          <p className="text-xs text-purple-800 flex items-center gap-2">
-                            <Info className="w-4 h-4 flex-shrink-0" />
-                            <span>
-                              All rejection data and documents are preserved for audit compliance. 
-                              This reset allows the applicant to resubmit their application.
-                            </span>
-                          </p>
-                        </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}

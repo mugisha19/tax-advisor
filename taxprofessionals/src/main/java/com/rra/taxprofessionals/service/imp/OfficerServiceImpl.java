@@ -873,6 +873,9 @@ public class OfficerServiceImpl implements OfficerService {
                 // Clear rejection fields if previously rejected
                 taxProfessional.setRejectionReason(null);
 
+                // Clear manual reset flag after officer reviews the resubmitted application
+                taxProfessional.setIsManualReset(false);
+
                 log.info("✅ Application APPROVED - TPIN: {}", request.getTpin());
 
             } else if (request.getStatus() == ApplicationStatus.REJECTED) {
@@ -902,6 +905,9 @@ public class OfficerServiceImpl implements OfficerService {
 
                 // Reset reapplication flag (if they were reapplying)
                 taxProfessional.setIsReapplication(false);
+
+                // Clear manual reset flag after officer reviews the resubmitted application
+                taxProfessional.setIsManualReset(false);
 
                 // ==================== CREATE DOCUMENT REJECTION RECORDS ====================
                 // Create DocumentRejection records for each problematic document ID
