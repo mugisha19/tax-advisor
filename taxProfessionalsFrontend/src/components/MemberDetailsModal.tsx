@@ -69,6 +69,8 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
   const [updatedDocumentIds, setUpdatedDocumentIds] = useState<Set<number>>(
     new Set()
   );
+  const [showResubmitModal, setShowResubmitModal] = useState(false);
+  const [postponedResubmit, setPostponedResubmit] = useState(false);
   const [processingDocId, setProcessingDocId] = useState<number | null>(null);
   const [actionType, setActionType] = useState<
     "view" | "download" | "replace" | null
@@ -236,6 +238,10 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
         // Use regular updateDocument (no automatic status change)
         await updateDocument(docId, file, documentType);
 
+        // Track this document as updated
+        const newUpdatedDocIds = new Set(updatedDocumentIds).add(docId);
+        setUpdatedDocumentIds(newUpdatedDocIds);
+
         // Refresh application data to get updated problematic documents list
         const appResponse = await getDetails(member.tpin);
         const appData = appResponse.data.data || appResponse.data;
@@ -248,8 +254,24 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
         if (wasProblematicDoc) {
           // Mark that a problematic document has been updated
           setHasUpdatedProblematicDoc(true);
-          // Track this specific document as updated
-          setUpdatedDocumentIds((prev) => new Set(prev).add(docId));
+
+          // Check if all problematic documents have been updated
+          const allDocsUpdated = appData?.problematicDocumentIds?.every((id: number) =>
+            newUpdatedDocIds.has(id)
+          ) ?? false;
+
+          // Check if should show resubmit modal
+          if (
+            checkIsFirstRejection(appData as Application) &&
+            !isResubmissionDeadlinePassed(appData as Application) &&
+            appData?.problematicDocumentIds &&
+            appData.problematicDocumentIds.length > 0 &&
+            allDocsUpdated &&
+            !postponedResubmit
+          ) {
+            // Show resubmit modal
+            setShowResubmitModal(true);
+          }
 
           // Check remaining problematic documents
           const remainingProblematic =
@@ -1129,6 +1151,116 @@ const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Auto Resubmit Prompt Modal */}
+      {showResubmitModal && (
+        <div 
+          className="fixed inset-0 flex items-center justify-center z-50 p-4"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
+        >
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 animate-fadeIn">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="p-3 bg-green-100 rounded-full">
+                <CheckCircle className="text-green-600" size={24} />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Ready to Resubmit Application?
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  Company Member Application
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                <p className="text-blue-900 font-medium">
+                  ✅ All required documents have been uploaded!
+                </p>
+                <p className="text-blue-800 text-sm mt-1">
+                  Your application is now ready for resubmission.
+                </p>
+              </div>
+
+              <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded">
+                <p className="text-orange-900 font-semibold mb-2">
+                  📋 Important: Manual Resubmission Required
+                </p>
+                <p className="text-orange-800 text-sm">
+                  Even though you've updated all your documents, the system{" "}
+                  <strong>does NOT automatically resubmit</strong> your
+                  application. You <strong>MUST click the resubmit button</strong>{" "}
+                  to send your application for review. Without resubmitting,
+                  your application will remain in rejected status.
+                </p>
+              </div>
+
+              <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                <p className="text-yellow-900 font-semibold mb-2">
+                  ⚠️ IMPORTANT: One-Time Resubmission Opportunity
+                </p>
+                <ul className="text-yellow-800 text-sm space-y-1 list-disc list-inside">
+                  <li>
+                    This is your <strong>ONLY</strong> chance to resubmit after
+                    rejection
+                  </li>
+                  <li>
+                    All documents (including updated ones) will be reviewed
+                    again
+                  </li>
+                  <li>
+                    If rejected again, you <strong>CANNOT</strong> resubmit and
+                    must contact RRA
+                  </li>
+                </ul>
+              </div>
+
+              <p className="text-gray-700">
+                Would you like to resubmit your application now?
+              </p>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={async () => {
+                  setShowResubmitModal(false);
+                  await handleResubmit();
+                }}
+                disabled={resubmitting}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {resubmitting ? (
+                  <>
+                    <RefreshCw className="animate-spin mr-2" size={20} />
+                    Resubmitting...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="mr-2" size={20} />
+                    Resubmit Now
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowResubmitModal(false);
+                  setPostponedResubmit(true);
+                  showToast(
+                    "Remember: Your application will NOT be automatically resubmitted. You MUST click the 'Resubmit Application' button when you're ready.",
+                    "warning"
+                  );
+                }}
+                disabled={resubmitting}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Resubmit Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       {toast.show && (
