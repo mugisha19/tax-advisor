@@ -511,6 +511,10 @@ public class OfficerServiceImpl implements OfficerService {
             // Perform the manual reset (resets rejectionCount to 0, preserves other audit data in dedicated fields)
             taxProfessional.performManualReset(officerName, reason);
             
+            // Clear problematic document rejections so they don't carry over to the fresh submission
+            documentRejectionRepository.deleteByTaxProfessionalTpin(tpin);
+            log.info("🗑️ Cleared document rejection records for TPIN: {}", tpin);
+            
             // Save to database (JPA UPDATE - only modified fields updated)
             TaxProfessional saved = taxProfessionalRepository.save(taxProfessional);
             
@@ -874,7 +878,7 @@ public class OfficerServiceImpl implements OfficerService {
                 taxProfessional.setRejectionReason(null);
 
                 // Clear manual reset flag after officer reviews the resubmitted application
-                taxProfessional.setIsManualReset(false);
+                taxProfessional.setManualReset(false);
 
                 log.info("✅ Application APPROVED - TPIN: {}", request.getTpin());
 
@@ -907,7 +911,7 @@ public class OfficerServiceImpl implements OfficerService {
                 taxProfessional.setIsReapplication(false);
 
                 // Clear manual reset flag after officer reviews the resubmitted application
-                taxProfessional.setIsManualReset(false);
+                taxProfessional.setManualReset(false);
 
                 // ==================== CREATE DOCUMENT REJECTION RECORDS ====================
                 // Create DocumentRejection records for each problematic document ID
