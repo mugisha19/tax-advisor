@@ -23,7 +23,7 @@ public class CacheConfig {
     public CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager("systemStatus");
         cacheManager.setCaffeine(Caffeine.newBuilder()
-                .expireAfterWrite(30, TimeUnit.SECONDS) // Cache for 30 seconds
+                .expireAfterWrite(2, TimeUnit.MINUTES) // Cache for 2 minutes (frontend polls every 1 minute)
                 .maximumSize(10) // Small cache, only system status
                 .recordStats()); // Enable statistics for monitoring
         return cacheManager;
