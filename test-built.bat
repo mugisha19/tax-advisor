@@ -95,7 +95,7 @@ echo [Service]>> test_deploy\scripts\tax-advisor-officer-frontend.service
 echo Type=simple>> test_deploy\scripts\tax-advisor-officer-frontend.service
 echo User=root>> test_deploy\scripts\tax-advisor-officer-frontend.service
 echo WorkingDirectory=/opt/tax-advisor/officer-frontend>> test_deploy\scripts\tax-advisor-officer-frontend.service
-echo ExecStart=/usr/local/bin/serve -s /opt/tax-advisor/officer-frontend -l 5175>> test_deploy\scripts\tax-advisor-officer-frontend.service
+echo ExecStart=/bin/serve -s /opt/tax-advisor/officer-frontend -l 5175>> test_deploy\scripts\tax-advisor-officer-frontend.service
 echo EnvironmentFile=-/opt/tax-advisor/officer-frontend/.env>> test_deploy\scripts\tax-advisor-officer-frontend.service
 echo Restart=always>> test_deploy\scripts\tax-advisor-officer-frontend.service
 echo RestartSec=10>> test_deploy\scripts\tax-advisor-officer-frontend.service
@@ -112,7 +112,7 @@ echo [Service]>> test_deploy\scripts\tax-advisor-taxprofessional-frontend.servic
 echo Type=simple>> test_deploy\scripts\tax-advisor-taxprofessional-frontend.service
 echo User=root>> test_deploy\scripts\tax-advisor-taxprofessional-frontend.service
 echo WorkingDirectory=/opt/tax-advisor/taxprofessional-frontend>> test_deploy\scripts\tax-advisor-taxprofessional-frontend.service
-echo ExecStart=/usr/local/bin/serve -s /opt/tax-advisor/taxprofessional-frontend -l 5176>> test_deploy\scripts\tax-advisor-taxprofessional-frontend.service
+echo ExecStart=/bin/serve -s /opt/tax-advisor/taxprofessional-frontend -l 5176>> test_deploy\scripts\tax-advisor-taxprofessional-frontend.service
 echo EnvironmentFile=-/opt/tax-advisor/taxprofessional-frontend/.env>> test_deploy\scripts\tax-advisor-taxprofessional-frontend.service
 echo Restart=always>> test_deploy\scripts\tax-advisor-taxprofessional-frontend.service
 echo RestartSec=10>> test_deploy\scripts\tax-advisor-taxprofessional-frontend.service
