@@ -219,8 +219,7 @@ const ApprovalCertificate = forwardRef(({ applicant }, ref) => {
                 lineHeight: 1.7,
               }}
             >
-              This license is valid for period of three (3) years until December 31,{" "}
-              {expiryDate ? expiryDate.getFullYear() : "2028"}.
+              This license is valid for period of three (3) years until December 31, 2028.
             </Typography>
           </Box>
 
