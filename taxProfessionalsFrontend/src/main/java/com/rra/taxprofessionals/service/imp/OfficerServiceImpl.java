@@ -688,7 +688,8 @@ public class OfficerServiceImpl implements OfficerService {
             if (request.getStatus() == ApplicationStatus.APPROVED) {
                 LocalDateTime approvalDate = LocalDateTime.now();
                 taxProfessional.setApprovalDate(approvalDate);
-                taxProfessional.setExpiryDate(approvalDate.plusYears(3));
+                // Fixed expiry: December 31, 2028 (per RRA announcement - system released Dec 30, 2025)
+                taxProfessional.setExpiryDate(LocalDateTime.of(2028, 12, 31, 23, 59, 59));
 
                 // Clear rejection fields if previously rejected
                 taxProfessional.setRejectionReason(null);

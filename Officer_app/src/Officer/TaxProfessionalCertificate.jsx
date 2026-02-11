@@ -18,19 +18,16 @@ const TaxProfessionalCertificate = forwardRef(({ applicant }, ref) => {
     });
   };
 
-  // Calculate expiry date (3 years from approval)
-  const calculateExpiryDate = (approvalDate) => {
-    if (!approvalDate) return null;
-    const date = new Date(approvalDate);
-    date.setFullYear(date.getFullYear() + 3);
-    return date;
+  // Fixed expiry date: December 31, 2028 (per RRA announcement - system released Dec 30, 2025)
+  const calculateExpiryDate = () => {
+    return new Date(2028, 11, 31); // Month is 0-indexed, so 11 = December
   };
 
   const approvalDate =
     applicant?.approvalDate ||
     applicant?.reviewedAt ||
     new Date().toISOString();
-  const expiryDate = calculateExpiryDate(approvalDate);
+  const expiryDate = applicant?.expiryDate ? new Date(applicant.expiryDate) : calculateExpiryDate();
 
   return (
     <Card
@@ -252,8 +249,8 @@ const TaxProfessionalCertificate = forwardRef(({ applicant }, ref) => {
                 lineHeight: 1.6,
               }}
             >
-              This license is valid for period of three (3) years until{" "}
-              {expiryDate ? expiryDate.getFullYear() : "……………"}.
+              This license is valid for period of three (3) years until December 31,{" "}
+              {expiryDate ? expiryDate.getFullYear() : "2028"}.
             </Typography>
           </Box>
 

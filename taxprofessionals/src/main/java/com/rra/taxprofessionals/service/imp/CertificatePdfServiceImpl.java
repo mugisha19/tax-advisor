@@ -106,11 +106,11 @@ public class CertificatePdfServiceImpl implements CertificatePdfService {
                     "Following the review of your submitted application and accompanying documents, "
                     + "the Rwanda Revenue Authority has approved your license."));
 
-            // VALIDITY with bold styling - Show only year
+            // VALIDITY with bold styling - Fixed expiry: December 31, 2028
             String expiryYear = app.getExpiryDate() != null ? String.valueOf(app.getExpiryDate().getYear())
-                    : String.valueOf(LocalDateTime.now().plusYears(3).getYear());
+                    : "2028";
 
-            doc.add(new Paragraph("This license is valid for period of three (3) years until "
+            doc.add(new Paragraph("This license is valid for period of three (3) years until December 31, "
                     + expiryYear + ".")
                     .setFontSize(10)
                     .setBold()

@@ -838,12 +838,9 @@ const OfficerDashboard = () => {
       : "—";
   // Helper function to check if business status is company
   const isCompany = (status) => status?.toLowerCase() === "company";
-  // Helper function to calculate expiry date (3 years from approval date)
-  const calculateExpiryDate = (approvalDate) => {
-    if (!approvalDate) return null;
-    const date = new Date(approvalDate);
-    date.setFullYear(date.getFullYear() + 3);
-    return date.toISOString();
+  // Fixed expiry date: December 31, 2028 (per RRA announcement - system released Dec 30, 2025)
+  const calculateExpiryDate = () => {
+    return new Date(2028, 11, 31).toISOString(); // Month is 0-indexed, so 11 = December
   };
   // Helper function to format date for display
   const formatDateLong = (date) => {
@@ -1426,18 +1423,8 @@ const OfficerDashboard = () => {
                             <span className="text-gray-900 font-semibold text-orange-600">
                               {selectedApplicant.expiryDate
                                 ? formatDateLong(selectedApplicant.expiryDate)
-                                : selectedApplicant.approvalDate
-                                ? formatDateLong(
-                                    calculateExpiryDate(
-                                      selectedApplicant.approvalDate
-                                    )
-                                  )
-                                : selectedApplicant.reviewedAt
-                                ? formatDateLong(
-                                    calculateExpiryDate(
-                                      selectedApplicant.reviewedAt
-                                    )
-                                  )
+                                : selectedApplicant.status === "APPROVED"
+                                ? formatDateLong(calculateExpiryDate())
                                 : "—"}
                             </span>
                           </div>
