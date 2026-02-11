@@ -936,6 +936,11 @@ public class TaxProfessionalServiceImpl implements TaxProfessionalService {
                         + ". Only REGISTERED applications can be submitted.");
             }
 
+            // ==================== SYSTEM LOCK VALIDATION ====================
+            // Block submission when system is locked
+            systemSettingsService.validateSystemNotLocked();
+            // ================================================================
+
             // Change status to PENDING
             taxProfessional.setStatus(ApplicationStatus.PENDING);
 

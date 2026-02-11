@@ -106,6 +106,40 @@ export interface Application {
    */
   resubmissionDeadline?: string;
   // ========================================================================
+
+  // ==================== MANUAL RESET FIELDS ====================
+  /**
+   * Indicates if this application was manually reset by an admin/officer
+   * When true, the applicant should NOT be blocked by 3-working-day deadline
+   * Only system lock should prevent actions
+   */
+  isManualReset?: boolean;
+  
+  /**
+   * Date when the manual reset was performed
+   */
+  manualResetDate?: string;
+  
+  /**
+   * Name of the officer who performed the manual reset
+   */
+  manualResetBy?: string;
+  
+  /**
+   * Reason provided for the manual reset
+   */
+  manualResetReason?: string;
+  
+  /**
+   * Total number of manual resets performed on this application
+   */
+  manualResetCount?: number;
+  
+  /**
+   * Rejection count at the time of the last manual reset (for audit)
+   */
+  rejectionCountAtReset?: number;
+  // =============================================================
 }
 
 export interface ApiResponse<T> {

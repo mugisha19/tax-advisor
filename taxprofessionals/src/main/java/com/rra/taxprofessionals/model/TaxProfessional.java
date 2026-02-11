@@ -447,13 +447,17 @@ public class TaxProfessional {
         // Clear blocking fields
         this.isReapplication = false;
         
+        // Clear deadline-related fields so the 3-working-day check does NOT block
+        // After manual reset, the applicant should only be blocked by system lock, not by old deadline
+        this.firstRejectionDate = null;
+        
         // ⚠️ AUDIT TRAIL: The following fields are PRESERVED for audit purposes:
         // - this.rejectionCountAtReset (NEW - captures count before reset)
         // - this.rejectionReason (PRESERVED - remains unchanged)
         // - this.previousRejectionReason (PRESERVED - remains unchanged)
         // - this.reviewedBy (PRESERVED - remains unchanged)
         // - this.reviewedAt (PRESERVED - remains unchanged)
-        // - this.firstRejectionDate (PRESERVED - remains unchanged)
+        // - this.firstRejectionDate (CLEARED - was blocking resubmission, audit preserved in rejectionCountAtReset)
         // - this.problematicDocumentIds (PRESERVED - remains unchanged)
         // - this.documents (PRESERVED - remains unchanged)
         
