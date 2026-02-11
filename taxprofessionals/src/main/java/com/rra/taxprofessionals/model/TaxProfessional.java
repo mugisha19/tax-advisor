@@ -476,4 +476,12 @@ public class TaxProfessional {
         return this.status == ApplicationStatus.REJECTED || 
                (this.status == ApplicationStatus.PENDING && this.rejectionCount != null && this.rejectionCount >= 1);
     }
+
+    /**
+     * Clears the manual reset flag after an officer reviews the resubmitted application.
+     * Called when an application is approved or rejected after a manual reset.
+     */
+    public void clearManualResetFlag() {
+        this.isManualReset = false;
+    }
 }

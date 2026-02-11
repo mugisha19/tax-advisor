@@ -23,6 +23,7 @@ target/
 dist/
 build/
 deploy/
+test_deploy/
 
 # Uploads and certificates
 uploads/

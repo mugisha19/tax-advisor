@@ -204,6 +204,25 @@ public class TaxProfessional {
     @Column(name = "rejection_letter_auto_sent", nullable = false)
     private Boolean rejectionLetterAutoSent = false;
 
+    // ==================== MANUAL RESET FIELDS ====================
+    @Column(name = "is_manual_reset", nullable = false)
+    private Boolean isManualReset = false;
+
+    @Column(name = "manual_reset_date")
+    private LocalDateTime manualResetDate;
+
+    @Column(name = "manual_reset_by")
+    private String manualResetBy;
+
+    @Column(name = "manual_reset_reason", length = 1000)
+    private String manualResetReason;
+
+    @Column(name = "manual_reset_count", nullable = false)
+    private Integer manualResetCount = 0;
+
+    @Column(name = "rejection_count_at_reset")
+    private Integer rejectionCountAtReset;
+
     // ========================================================================
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", insertable = false, updatable = false)
@@ -232,6 +251,12 @@ public class TaxProfessional {
         }
         if (rejectionLetterAutoSent == null) {
             rejectionLetterAutoSent = false;
+        }
+        if (isManualReset == null) {
+            isManualReset = false;
+        }
+        if (manualResetCount == null) {
+            manualResetCount = 0;
         }
     }
 
@@ -297,5 +322,13 @@ public class TaxProfessional {
      */
     public boolean isIndividualApplication() {
         return this.companyId == null || this.companyId.trim().isEmpty();
+    }
+
+    /**
+     * Clears the manual reset flag after an officer reviews the resubmitted application.
+     * Called when an application is approved or rejected after a manual reset.
+     */
+    public void clearManualResetFlag() {
+        this.isManualReset = false;
     }
 }
